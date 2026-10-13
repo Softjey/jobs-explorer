@@ -8,12 +8,16 @@ The full task description is in `TASK.md` (local only, gitignored) — read it b
 
 Findings and decisions for agents live in `docs/`:
 
+- `docs/architecture.md` — the approved architecture: stack, folder structure, entities, API layer, stores, routes, screen states and build order. Read it before writing code.
 - `docs/api-cors.md` — the Coople API sends no CORS headers; browser calls from `localhost` fail, so a proxy is required.
 
 ## Stack
 
-- TypeScript
-- Web or React Native — TBD
+- Web app: Vite + React + TypeScript (strict)
+- shadcn/ui + Tailwind v4
+- TanStack Query (server state), zustand `persist` (client state), TanStack Router (file-based)
+- zod for schemas; types are inferred from them
+- Vitest
 
 ## Conventions
 
