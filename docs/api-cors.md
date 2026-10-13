@@ -10,13 +10,13 @@ The Coople public API does **not** send CORS headers. A browser app running on `
 
 Endpoints (base `https://www.coople.com/ch/resources/api/work-assignments/public-jobs`):
 
-| Browser request from `localhost` | Result |
-|---|---|
-| `GET /list?pageNum=0&pageSize=30` | `TypeError: Failed to fetch` |
-| `GET /{id}` (existing job) | `TypeError: Failed to fetch` |
-| `GET /{id}` (non-existent id, API answers 404) | `TypeError: Failed to fetch` |
-| `GET /list` with `Accept` / `Content-Type: application/json` | `TypeError: Failed to fetch` |
-| `GET /list` with `mode: 'no-cors'` | `type: opaque`, `status: 0` (request reached the server, body unreadable) |
+| Browser request from `localhost`                             | Result                                                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `GET /list?pageNum=0&pageSize=30`                            | `TypeError: Failed to fetch`                                              |
+| `GET /{id}` (existing job)                                   | `TypeError: Failed to fetch`                                              |
+| `GET /{id}` (non-existent id, API answers 404)               | `TypeError: Failed to fetch`                                              |
+| `GET /list` with `Accept` / `Content-Type: application/json` | `TypeError: Failed to fetch`                                              |
+| `GET /list` with `mode: 'no-cors'`                           | `type: opaque`, `status: 0` (request reached the server, body unreadable) |
 
 Server side (curl, `Origin: http://localhost:5173`):
 

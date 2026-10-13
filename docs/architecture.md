@@ -6,16 +6,16 @@ The app is frontend only. The task does not ask for a backend, and Favourites ar
 
 ## 1. Stack
 
-| Area | Choice |
-|---|---|
-| Build | Vite + React + TypeScript (strict) |
-| UI | shadcn/ui + Tailwind v4 |
-| Server state | TanStack Query |
-| Client state | zustand + `persist` (localStorage) |
-| Routing | TanStack Router, file-based |
-| Validation and types | zod; types are inferred from schemas |
-| Runtime and deploy | Docker (nginx), Docker Compose locally, Railway in production |
-| Tests | Vitest + Testing Library + MSW, Playwright (see `quality.md`) |
+| Area                 | Choice                                                        |
+| -------------------- | ------------------------------------------------------------- |
+| Build                | Vite + React + TypeScript (strict)                            |
+| UI                   | shadcn/ui + Tailwind v4                                       |
+| Server state         | TanStack Query                                                |
+| Client state         | zustand + `persist` (localStorage)                            |
+| Routing              | TanStack Router, file-based                                   |
+| Validation and types | zod; types are inferred from schemas                          |
+| Runtime and deploy   | Docker (nginx), Docker Compose locally, Railway in production |
+| Tests                | Vitest + Testing Library + MSW, Playwright (see `quality.md`) |
 
 ## 2. Structure
 
@@ -55,16 +55,16 @@ entities/
   pagination/    Paginated<T>
 ```
 
-| Entity | Fields |
-|---|---|
-| `Money` | `amount: number`, `currencyId: number` |
-| `JobLocation` | `addressStreet`, `extraAddress`, `zip`, `city: string`, `countryId: number`, `state?: string` |
-| `JobSkill` | `jobProfileId: number`, `educationalLevelId?: number` |
+| Entity                   | Fields                                                                                                                                                                                                            |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Money`                  | `amount: number`, `currencyId: number`                                                                                                                                                                            |
+| `JobLocation`            | `addressStreet`, `extraAddress`, `zip`, `city: string`, `countryId: number`, `state?: string`                                                                                                                     |
+| `JobSkill`               | `jobProfileId: number`, `educationalLevelId?: number`                                                                                                                                                             |
 | `JobSummary` (list item) | `workAssignmentId`, `waReadableId`, `workAssignmentName`, `branchLink: string`; `hourlyWage`, `salary: Money`; `jobSkill: JobSkill`; `jobLocation: JobLocation`; `periodFrom`, `datePublished: number` (epoch ms) |
-| `JobDetails` | `JobSummary` + `requirements: string`, `clothingRequirements?: string`, `periodTo`, `firstShiftTo`, `shiftsCount`, `workDuration: number` |
-| `JobPreview` | `Pick<JobSummary, …>` with exactly the fields the card shows |
-| `FavouriteJob` | `JobPreview & { addedAt: number }` |
-| `Paginated<T>` | `items: T[]`, `total: number` |
+| `JobDetails`             | `JobSummary` + `requirements: string`, `clothingRequirements?: string`, `periodTo`, `firstShiftTo`, `shiftsCount`, `workDuration: number`                                                                         |
+| `JobPreview`             | `Pick<JobSummary, …>` with exactly the fields the card shows                                                                                                                                                      |
+| `FavouriteJob`           | `JobPreview & { addedAt: number }`                                                                                                                                                                                |
+| `Paginated<T>`           | `items: T[]`, `total: number`                                                                                                                                                                                     |
 
 - **Optional fields:** `state`, `educationalLevelId` and `clothingRequirements` are missing in some real responses (checked on 30 list items and 7 details).
 - **`JobPreview`:** `JobCard` takes this type, so the same card renders in the job list and in Favourites.
@@ -117,13 +117,13 @@ store/
 
 `routes/` holds route config only: path, param validation, loader and component wiring. Page JSX lives in `pages/`.
 
-| File | Path | Contents |
-|---|---|---|
-| `routes/__root.tsx` | — | `createRootRouteWithContext<{ queryClient }>`, layout with header (Jobs, Favourites with a counter), `<Outlet />`, global `notFoundComponent` and `errorComponent` |
-| `routes/index.tsx` | `/` | loader prefetches the first list page; `component: JobListPage` |
-| `routes/job.$id.tsx` | `/job/$id` | `params.parse` checks the id is a UUID with zod, otherwise `notFound()`; loader prefetches `jobQueryOptions(id)`; `component: JobDetailsPage` |
-| `routes/favourites.tsx` | `/favourites` | no loader; `component: FavouritesPage` |
-| `routeTree.gen.ts` | — | generated by the router plugin; committed |
+| File                    | Path          | Contents                                                                                                                                                           |
+| ----------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `routes/__root.tsx`     | —             | `createRootRouteWithContext<{ queryClient }>`, layout with header (Jobs, Favourites with a counter), `<Outlet />`, global `notFoundComponent` and `errorComponent` |
+| `routes/index.tsx`      | `/`           | loader prefetches the first list page; `component: JobListPage`                                                                                                    |
+| `routes/job.$id.tsx`    | `/job/$id`    | `params.parse` checks the id is a UUID with zod, otherwise `notFound()`; loader prefetches `jobQueryOptions(id)`; `component: JobDetailsPage`                      |
+| `routes/favourites.tsx` | `/favourites` | no loader; `component: FavouritesPage`                                                                                                                             |
+| `routeTree.gen.ts`      | —             | generated by the router plugin; committed                                                                                                                          |
 
 `router.ts` creates the router with `context: { queryClient }` and `defaultPreload: 'intent'`.
 
@@ -139,12 +139,12 @@ A page reads data through the hooks in `store/` and composes components. Loaders
 
 ## 7. Screen behaviour
 
-| Screen | Loading | Error | Empty | Not found |
-|---|---|---|---|---|
-| Job list | grid of `JobCardSkeleton` | `ErrorState` + Retry | "No jobs" | — |
-| Job list, next page | skeletons at the bottom | error row + Retry; loaded cards stay | "End of list" | — |
-| Favourites | — | — | "No favourites yet" + link to the list | — |
-| Job details | `JobDetailsSkeleton`, or the header from the list cache | `ErrorState` + Retry | — | "Job not found" |
+| Screen              | Loading                                                 | Error                                | Empty                                  | Not found       |
+| ------------------- | ------------------------------------------------------- | ------------------------------------ | -------------------------------------- | --------------- |
+| Job list            | grid of `JobCardSkeleton`                               | `ErrorState` + Retry                 | "No jobs"                              | —               |
+| Job list, next page | skeletons at the bottom                                 | error row + Retry; loaded cards stay | "End of list"                          | —               |
+| Favourites          | —                                                       | —                                    | "No favourites yet" + link to the list | —               |
+| Job details         | `JobDetailsSkeleton`, or the header from the list cache | `ErrorState` + Retry                 | —                                      | "Job not found" |
 
 - **Infinite scroll:** a sentinel element at the bottom of the list and an `IntersectionObserver` that calls `fetchNextPage`.
 - **Favourites:** cards render from localStorage with no requests. Clicking a card opens `/job/$id`, where details are fetched by id.
@@ -156,12 +156,12 @@ A page reads data through the hooks in `store/` and composes components. Loaders
 
 The browser always calls the relative `/api`. What answers it depends on how the app is run:
 
-| Mode | Command | Who proxies `/api` |
-|---|---|---|
-| Development | `npm run dev` | Vite `server.proxy` |
-| Local preview of the build | `npm run preview` | Vite `preview.proxy` |
-| Container, local | `docker compose up` | nginx |
-| Production | Railway, same image | nginx |
+| Mode                       | Command             | Who proxies `/api`   |
+| -------------------------- | ------------------- | -------------------- |
+| Development                | `npm run dev`       | Vite `server.proxy`  |
+| Local preview of the build | `npm run preview`   | Vite `preview.proxy` |
+| Container, local           | `docker compose up` | nginx                |
+| Production                 | Railway, same image | nginx                |
 
 All four map `/api` to `https://www.coople.com/ch/resources/api`.
 
