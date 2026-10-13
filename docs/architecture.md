@@ -104,7 +104,7 @@ store/
 
 - **`staleTime` 5 min:** the API responds with `cache-control: no-store`, so all caching is done by TanStack Query.
 - **`useJobs`:** `useInfiniteQuery`, page size 30; the next page is derived from `total`.
-- **`useJob`:** `placeholderData` comes from the list cache, so the details header shows immediately.
+- **`useJob`:** plain `useQuery` for `JobDetails`. **`useJobPreview(id)`** reads the list cache, so the details header shows immediately (the list items lack the details-only fields, so this is not `placeholderData`).
 - **Retry:** 4xx is not retried; network errors and 5xx are retried twice.
 
 ### Client
@@ -207,4 +207,4 @@ Static checks, test levels, coverage, CI and CD are described in `quality.md`. C
 - **Currency:** `currencyId: 1` is shown as CHF. The API has no currency dictionary.
 - **`workDuration`:** looks like minutes (1980 for 4 shifts). The API does not state the unit.
 - **`jobProfileId`, `educationalLevelId`, `countryId`:** not shown, because the API has no dictionaries for them.
-- **Open:** while checking field types, one of 8 details requests came back without `data`. The cause is not known yet. Check it in build step 2, because it affects error handling.
+- **Resolved:** a response without `data` is treated as `ApiError` of kind `schema` and shown as a regular error with Retry (covered by tests in `http-client.test.ts` and `JobDetailsPage.test.tsx`).
