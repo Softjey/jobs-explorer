@@ -1,0 +1,20 @@
+server {
+    listen ${PORT};
+    root /usr/share/nginx/html;
+
+    location /api/ {
+        proxy_pass https://www.coople.com/ch/resources/api/;
+        proxy_ssl_server_name on;
+        proxy_set_header Host www.coople.com;
+    }
+
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}
