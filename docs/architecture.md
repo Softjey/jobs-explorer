@@ -2,7 +2,7 @@
 
 Approved: 2026-10-13. This is the plan the app is built against. Update it when a decision changes.
 
-The app is frontend only. The task does not ask for a backend, and Favourites are stored in the browser. The only server-side piece is a proxy that works around CORS (see `api-cors.md`).
+The app is frontend only. The task does not ask for a backend, and Favourites are stored in the browser. The only server-side piece is a proxy that works around CORS (see `api-cors.md`): Vite in development, nginx in the container.
 
 ## 1. Stack
 
@@ -14,7 +14,8 @@ The app is frontend only. The task does not ask for a backend, and Favourites ar
 | Client state | zustand + `persist` (localStorage) |
 | Routing | TanStack Router, file-based |
 | Validation and types | zod; types are inferred from schemas |
-| Tests | Vitest |
+| Runtime and deploy | Docker (nginx), Docker Compose locally, Railway in production |
+| Tests | Vitest + Testing Library + MSW, Playwright (see `quality.md`) |
 
 ## 2. Structure
 
@@ -34,6 +35,10 @@ src/
   lib/                 format.ts (Intl), utils.ts (cn)
   router.ts
   main.tsx
+e2e/                   Playwright tests
+Dockerfile
+docker-compose.yml
+nginx/default.conf.template
 ```
 
 Dependencies point one way: `routes → pages → components → store → api → entities`. Components never call `fetch` or `api` directly; they go through `store/`.
@@ -147,29 +152,59 @@ A page reads data through the hooks in `store/` and composes components. Loaders
 - **Not found on details:** either the API returned 404, or the `id` is not a UUID. In the second case no request is made, because the API answers 401 to a non-UUID id.
 - **`requirements`:** the API returns markdown; it is rendered with `react-markdown`.
 
-## 8. CORS
+## 8. CORS, container and deployment
 
-- **Local:** Vite `server.proxy` and `preview.proxy` map `/api` to `https://www.coople.com/ch/resources/api`.
-- **Deployment:** the host needs the same rewrite. Document it in the README.
+The browser always calls the relative `/api`. What answers it depends on how the app is run:
 
-## 9. Tests
+| Mode | Command | Who proxies `/api` |
+|---|---|---|
+| Development | `npm run dev` | Vite `server.proxy` |
+| Local preview of the build | `npm run preview` | Vite `preview.proxy` |
+| Container, local | `docker compose up` | nginx |
+| Production | Railway, same image | nginx |
 
-Vitest covers `HttpClient` (envelope, the three error kinds), `JobsResource` (schemas against real fixtures), the favourites store (toggle, corrupt localStorage) and the formatters.
+All four map `/api` to `https://www.coople.com/ch/resources/api`.
+
+### Dockerfile
+
+Multi-stage:
+
+1. **Build stage (Node):** `npm ci`, `npm run build`.
+2. **Runtime stage (nginx):** copies `dist` and `nginx/default.conf.template`.
+
+### nginx
+
+- **Port:** listens on `$PORT`. Railway injects it; the official nginx image substitutes it from the template at start.
+- **`/api/`:** `proxy_pass` to the Coople origin with `proxy_ssl_server_name on` and the `Host` header set to `www.coople.com`.
+- **Everything else:** static files with `try_files $uri /index.html`, so `/job/:id` and `/favourites` work when opened directly.
+- **Caching:** hashed assets are served as immutable; `index.html` is served with `no-cache`.
+
+### Docker Compose
+
+`docker-compose.yml` has one service that builds the `Dockerfile` and publishes it on `http://localhost:8080`. It is the easiest way to run the app: `docker compose up --build`, no Node needed on the host.
+
+### Railway
+
+One project with one service built from the `Dockerfile`. No environment variables are required; `PORT` is provided by Railway. How deploys are triggered is described in `quality.md`, section 5.
+
+## 9. Tests and checks
+
+Static checks, test levels, coverage, CI and CD are described in `quality.md`. Code is written test-first (see `AGENTS.md`).
 
 ## 10. Build order
 
-1. Scaffold: Vite, Tailwind, shadcn, router, QueryClient, proxy.
+1. Scaffold: Vite, Tailwind, shadcn, router, QueryClient, proxy; all scripts and tools from `quality.md`; CI workflow.
 2. `entities/` and `api/` with tests.
 3. `store/server` and the job list with infinite scroll and skeletons.
 4. Job details with all states and not-found.
 5. `store/client`, the favourite button and the Favourites page.
 6. Design from Claude Design.
-7. README and screen recording.
+7. `Dockerfile`, nginx config, `docker-compose.yml`; Railway project and first deploy.
+8. README and screen recording.
 
 ## 11. Assumptions and open points
 
 - **Currency:** `currencyId: 1` is shown as CHF. The API has no currency dictionary.
 - **`workDuration`:** looks like minutes (1980 for 4 shifts). The API does not state the unit.
 - **`jobProfileId`, `educationalLevelId`, `countryId`:** not shown, because the API has no dictionaries for them.
-- **Deployment:** local run and a screen recording only.
 - **Open:** while checking field types, one of 8 details requests came back without `data`. The cause is not known yet. Check it in build step 2, because it affects error handling.
