@@ -1,0 +1,30 @@
+{
+  "status": 200,
+  "data": {
+    "workAssignmentId": "3b9d71a8-f900-496b-b0d0-433d587fbe04",
+    "waReadableId": "60261046445",
+    "hourlyWage": { "amount": 27.5, "currencyId": 1 },
+    "salary": { "amount": 2997.5, "currencyId": 1 },
+    "jobSkill": { "jobProfileId": 58, "educationalLevelId": 8 },
+    "workAssignmentName": "Stammdatenerfassung",
+    "jobLocation": {
+      "addressStreet": "",
+      "extraAddress": "",
+      "zip": "8408",
+      "city": "Winterthur",
+      "countryId": 1
+    },
+    "periodFrom": 1791867600000,
+    "datePublished": 1790189279000,
+    "branchLink": "https://coople.app.link/RjeQ6JVnx6b",
+    "requirements": "Zur Unterstützung unseres Logistikteams suchen wir eine zuverlässige sorgfältige Person für die Erfassung von Stammdaten in unserem .\n\nDeine Aufgaben:\n•\tErfassung von Artikel- Lagerstammdaten mit einem mobilen Endgerät (Smartphone)\n•\tKontrolle Abgleich von Lagerinformationen direkt vor Ort\n•\tÜberprüfung von Lagerplätzen sowie Artikeldaten auf Vollständigkeit Richtigkeit\nDas bringst du mit:\n•\tGültiger Staplerausweis (zwingend erforderlich)\n•\tErfahrung im oder in der \n•\tSorgfältige, zuverlässige selbstständige Arbeitsweise\n•\tSicherer Umgang mit Smartphones oder mobilen Geräten\n•\tGute Deutschkenntnisse\nDas bieten wir:\n•\tEine abwechslungsreiche Tätigkeit in einem \n•\tAngenehmes Arbeitsumfeld ein motiviertes Team\n•\tFaire Entlohnung geregelte Arbeitszeiten\n\nDie Tätigkeit eignet sich für Personen, die gerne praktisch arbeiten, über Erfahrung im verfügen Freude an einer genauen strukturierten Arbeitsweise haben.",
+    "periodTo": 1793368800000,
+    "firstShiftTo": 1791900000000,
+    "shiftsCount": 14,
+    "workDuration": 6540
+  },
+  "errorCode": "OK",
+  "errorDetails": {},
+  "errorId": 0,
+  "error": false
+}

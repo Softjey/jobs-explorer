@@ -2,7 +2,7 @@ import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query'
 import { api } from '@/api/api'
 import { jobsKeys } from './jobs.keys'
 
-export const JOBS_PAGE_SIZE = 30
+const JOBS_PAGE_SIZE = 30
 
 export const jobsInfiniteQueryOptions = () =>
   infiniteQueryOptions({

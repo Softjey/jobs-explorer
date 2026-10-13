@@ -4,9 +4,9 @@ import details from './fixtures/details.json'
 import list from './fixtures/list.json'
 import notFound from './fixtures/not-found.json'
 
-export const API = '/api/work-assignments/public-jobs'
+const API = '/api/work-assignments/public-jobs'
 
-export const handlers = [
+const handlers = [
   http.get(`*${API}/list`, () => HttpResponse.json(list)),
   http.get(`*${API}/:id`, ({ params }) =>
     params['id'] === details.data.workAssignmentId

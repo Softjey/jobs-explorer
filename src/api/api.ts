@@ -1,7 +1,7 @@
 import { HttpClient } from './http-client'
 import { JobsResource } from './resources/jobs.resource'
 
-export class Api {
+class Api {
   readonly jobs: JobsResource
 
   constructor(http: HttpClient) {

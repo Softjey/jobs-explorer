@@ -1,0 +1,85 @@
+import list from '@/test/fixtures/list.json'
+import { FAVOURITES_STORAGE_KEY, selectFavouriteList, useFavouritesStore } from './favourites.store'
+
+const [first, second] = list.data.items
+if (!first || !second) throw new Error('fixture needs two items')
+
+function reset() {
+  useFavouritesStore.setState({ items: {} })
+}
+
+describe('favourites store', () => {
+  beforeEach(reset)
+
+  it('toggle adds a job and a second toggle removes it', () => {
+    const { toggle } = useFavouritesStore.getState()
+    toggle(first)
+    expect(useFavouritesStore.getState().isFavourite(first.workAssignmentId)).toBe(true)
+    toggle(first)
+    expect(useFavouritesStore.getState().isFavourite(first.workAssignmentId)).toBe(false)
+  })
+
+  it('stores only the preview fields and addedAt', () => {
+    useFavouritesStore.getState().toggle(first)
+    const stored = useFavouritesStore.getState().items[first.workAssignmentId]
+    expect(stored).toBeDefined()
+    expect(stored).not.toHaveProperty('branchLink')
+    expect(typeof stored?.addedAt).toBe('number')
+  })
+
+  it('remove deletes a job', () => {
+    useFavouritesStore.getState().toggle(first)
+    useFavouritesStore.getState().remove(first.workAssignmentId)
+    expect(useFavouritesStore.getState().items).toEqual({})
+  })
+
+  it('lists the newest favourite first', () => {
+    vi.spyOn(Date, 'now').mockReturnValueOnce(1000).mockReturnValueOnce(2000)
+    const { toggle } = useFavouritesStore.getState()
+    toggle(first)
+    toggle(second)
+    const ids = selectFavouriteList(useFavouritesStore.getState()).map((j) => j.workAssignmentId)
+    expect(ids).toEqual([second.workAssignmentId, first.workAssignmentId])
+  })
+
+  it('persists to localStorage', () => {
+    useFavouritesStore.getState().toggle(first)
+    const raw = localStorage.getItem(FAVOURITES_STORAGE_KEY)
+    expect(raw).toContain(first.workAssignmentId)
+  })
+
+  it('rehydrates valid persisted data', async () => {
+    const item = { ...first, addedAt: 5 }
+    localStorage.setItem(
+      FAVOURITES_STORAGE_KEY,
+      JSON.stringify({ state: { items: { [first.workAssignmentId]: item } }, version: 1 }),
+    )
+    await useFavouritesStore.persist.rehydrate()
+    expect(useFavouritesStore.getState().isFavourite(first.workAssignmentId)).toBe(true)
+  })
+
+  it('resets to empty when persisted data is invalid', async () => {
+    localStorage.setItem(
+      FAVOURITES_STORAGE_KEY,
+      JSON.stringify({ state: { items: { x: { nope: true } } }, version: 1 }),
+    )
+    await useFavouritesStore.persist.rehydrate()
+    expect(useFavouritesStore.getState().items).toEqual({})
+  })
+
+  it('resets to empty when persisted data is not JSON', async () => {
+    localStorage.setItem(FAVOURITES_STORAGE_KEY, '{broken')
+    await useFavouritesStore.persist.rehydrate()
+    expect(useFavouritesStore.getState().items).toEqual({})
+  })
+
+  it('resets to empty when the persisted version is unknown', async () => {
+    const item = { ...first, addedAt: 5 }
+    localStorage.setItem(
+      FAVOURITES_STORAGE_KEY,
+      JSON.stringify({ state: { items: { [first.workAssignmentId]: item } }, version: 99 }),
+    )
+    await useFavouritesStore.persist.rehydrate()
+    expect(useFavouritesStore.getState().items).toEqual({})
+  })
+})

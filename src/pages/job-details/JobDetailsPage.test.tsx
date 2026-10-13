@@ -3,11 +3,33 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { renderApp } from '@/test/render'
 import { server } from '@/test/server'
+import list from '@/test/fixtures/list.json'
+import { useFavouritesStore } from '@/store/client/favourites.store'
 
 const ID = '3b9d71a8-f900-496b-b0d0-433d587fbe04'
 const UNKNOWN_ID = '00000000-0000-4000-8000-000000000000'
 
 describe('JobDetailsPage', () => {
+  beforeEach(() => {
+    useFavouritesStore.setState({ items: {} })
+  })
+
+  it('toggles the favourite from the details header', async () => {
+    await renderApp(`/job/${ID}`)
+    await userEvent.click(await screen.findByRole('button', { name: 'Add to favourites' }))
+    expect(useFavouritesStore.getState().isFavourite(ID)).toBe(true)
+    expect(screen.getByRole('button', { name: 'Remove from favourites' })).toBeInTheDocument()
+  })
+
+  it('offers to remove an unpublished job from favourites', async () => {
+    const [item] = list.data.items
+    if (!item) throw new Error('fixture needs an item')
+    useFavouritesStore.getState().toggle({ ...item, workAssignmentId: UNKNOWN_ID })
+    await renderApp(`/job/${UNKNOWN_ID}`)
+    await userEvent.click(await screen.findByRole('button', { name: 'Remove from favourites' }))
+    expect(useFavouritesStore.getState().isFavourite(UNKNOWN_ID)).toBe(false)
+  })
+
   it('shows a skeleton while loading', async () => {
     server.use(http.get(`*/${ID}`, () => new Promise(() => undefined)))
     await renderApp(`/job/${ID}`)

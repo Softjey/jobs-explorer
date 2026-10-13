@@ -3,8 +3,11 @@ import { ArrowLeft } from 'lucide-react'
 import Markdown from 'react-markdown'
 import { ErrorState } from '@/components/common/ErrorState'
 import { JobDetailsSkeleton } from '@/components/jobs/JobDetailsSkeleton'
+import { FavouriteButton } from '@/components/jobs/FavouriteButton'
+import { Button } from '@/components/ui/button'
 import { ApiError } from '@/api/api-error'
 import { formatDate, formatDuration, formatLocation, formatWage } from '@/lib/format'
+import { useFavouritesStore, useIsFavourite } from '@/store/client/favourites.store'
 import { useJob, useJobPreview } from '@/store/server/jobs/jobs.hooks'
 import { NotFoundPage } from '../not-found/NotFoundPage'
 
@@ -15,13 +18,26 @@ interface JobDetailsPageProps {
 export function JobDetailsPage({ id }: JobDetailsPageProps) {
   const { data: job, error, isPending, refetch } = useJob(id)
   const preview = useJobPreview(id)
+  const isFavourite = useIsFavourite(id)
+  const remove = useFavouritesStore((state) => state.remove)
 
   if (error instanceof ApiError && error.kind === 'http' && error.status === 404) {
     return (
       <NotFoundPage
         title="Job not found"
         description="This job is no longer published or the link is wrong."
-      />
+      >
+        {isFavourite && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              remove(id)
+            }}
+          >
+            Remove from favourites
+          </Button>
+        )}
+      </NotFoundPage>
     )
   }
 
@@ -47,14 +63,17 @@ export function JobDetailsPage({ id }: JobDetailsPageProps) {
         ) : (
           <>
             {header && (
-              <header className="flex flex-col gap-2">
-                <h1 className="text-3xl leading-tight font-bold tracking-tight">
-                  {header.workAssignmentName}
-                </h1>
-                <span className="text-slate-600">
-                  {formatLocation(header.jobLocation)} · Published{' '}
-                  {formatDate(header.datePublished)}
-                </span>
+              <header className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex min-w-0 flex-1 basis-80 flex-col gap-2">
+                  <h1 className="text-3xl leading-tight font-bold tracking-tight">
+                    {header.workAssignmentName}
+                  </h1>
+                  <span className="text-slate-600">
+                    {formatLocation(header.jobLocation)} · Published{' '}
+                    {formatDate(header.datePublished)}
+                  </span>
+                </div>
+                <FavouriteButton job={header} variant="labelled" />
               </header>
             )}
             {isPending && <JobDetailsSkeleton />}

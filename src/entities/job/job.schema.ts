@@ -10,7 +10,7 @@ export const jobLocationSchema = z.object({
   state: z.string().optional(),
 })
 
-export const jobSkillSchema = z.object({
+const jobSkillSchema = z.object({
   jobProfileId: z.number(),
   educationalLevelId: z.number().optional(),
 })
