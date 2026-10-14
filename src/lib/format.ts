@@ -36,3 +36,9 @@ export function formatDuration(minutes: JobDetails['workDuration']): string {
   if (hours === 0) return `${rest} min`
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`
 }
+
+const shiftPlurals = new Intl.PluralRules('en')
+
+export function formatShifts(count: JobDetails['shiftsCount']): string {
+  return shiftPlurals.select(count) === 'one' ? `${count} shift` : `${count} shifts`
+}

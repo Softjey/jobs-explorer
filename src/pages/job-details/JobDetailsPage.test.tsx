@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { renderApp } from '@/test/render'
 import { server } from '@/test/server'
+import details from '@/test/fixtures/details.json'
 import list from '@/test/fixtures/list.json'
 import { useFavouritesStore } from '@/store/client/favourites/favourites.store'
 
@@ -45,6 +46,16 @@ describe('JobDetailsPage', () => {
     expect(screen.getByText('14 shifts · 109 h')).toBeInTheDocument()
     expect(screen.getByText(/Deine Aufgaben/)).toBeInTheDocument()
     expect(screen.queryByText('Clothing')).not.toBeInTheDocument()
+  })
+
+  it('uses the singular for a job with one shift', async () => {
+    server.use(
+      http.get(`*/${ID}`, () =>
+        HttpResponse.json({ ...details, data: { ...details.data, shiftsCount: 1 } }),
+      ),
+    )
+    await renderApp(`/job/${ID}`)
+    expect(await screen.findByText('1 shift · 109 h')).toBeInTheDocument()
   })
 
   it('shows the header from the list cache while details load', async () => {

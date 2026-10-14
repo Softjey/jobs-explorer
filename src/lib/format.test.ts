@@ -1,4 +1,4 @@
-import { formatDate, formatDuration, formatLocation, formatWage } from './format'
+import { formatDate, formatDuration, formatLocation, formatShifts, formatWage } from './format'
 
 describe('format', () => {
   it('formats a CHF wage with two decimals', () => {
@@ -54,6 +54,15 @@ describe('format', () => {
     expect(formatWage({ amount: 0, currencyId: 1 })).toBe('CHF 0.00')
     const location = { addressStreet: '', extraAddress: '', zip: '', city: '', countryId: 1 }
     expect(formatLocation(location)).toBe('')
+  })
+
+  it('formats one shift in the singular', () => {
+    expect(formatShifts(1)).toBe('1 shift')
+  })
+
+  it('formats several shifts in the plural', () => {
+    expect(formatShifts(14)).toBe('14 shifts')
+    expect(formatShifts(0)).toBe('0 shifts')
   })
 
   it('formats zero minutes', () => {

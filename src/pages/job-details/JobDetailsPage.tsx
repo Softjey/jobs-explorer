@@ -7,7 +7,7 @@ import { FavouriteButton } from '@/components/jobs/FavouriteButton'
 import { JobDetailsSkeleton } from '@/components/jobs/JobDetailsSkeleton'
 import { Button } from '@/components/ui/button'
 import type { JobId } from '@/entities/job'
-import { formatDate, formatDuration, formatLocation, formatWage } from '@/lib/format'
+import { formatDate, formatDuration, formatLocation, formatShifts, formatWage } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useIsFavourite } from '@/store/client/favourites/favourites.hooks'
 import { useFavouritesStore } from '@/store/client/favourites/favourites.store'
@@ -91,7 +91,7 @@ export function JobDetailsPage({ id, className, ...props }: JobDetailsPageProps)
                   />
                   <Fact
                     label="Shifts"
-                    value={`${job.shiftsCount} shifts · ${formatDuration(job.workDuration)}`}
+                    value={`${formatShifts(job.shiftsCount)} · ${formatDuration(job.workDuration)}`}
                   />
                   <Fact label="Job ID" value={job.waReadableId} />
                 </dl>
