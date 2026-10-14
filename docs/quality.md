@@ -97,7 +97,7 @@ GitHub Actions, on every push and pull request. Independent checks run as parall
 Target: Railway, one service built from the repo `Dockerfile`.
 
 - **Why Railway:** the app needs a same-origin proxy for `/api` (see `api-cors.md`), which a static host such as GitHub Pages cannot provide. On Railway the container serves the static build and proxies `/api` itself.
-- **Trigger:** manual only. The `Deploy` workflow (`.github/workflows/deploy.yml`) runs on `workflow_dispatch` and is never started by CI or a push. It deploys the selected ref with the Railway CLI and a project token stored in the `RAILWAY_TOKEN` repository secret. It does not wait for CI, so check that CI is green on the ref first.
+- **Trigger:** manual only. The `Deploy` workflow (`.github/workflows/deploy.yml`) runs on `workflow_dispatch` and is never started by CI or a push. It deploys the selected ref to service `jobs-explorer`, environment `production`, with the Railway CLI and a project token stored in the `RAILWAY_TOKEN` repository secret. It does not wait for CI, so check that CI is green on the ref first.
 - **Same image everywhere:** `docker compose up` locally and the Railway service run the same `Dockerfile`, so the deployed behaviour can be reproduced on a laptop.
 - **Smoke check after deploy:** the public URL returns the app, `/api/work-assignments/public-jobs/list?pageNum=0&pageSize=1` returns `200`, and `/job/<id>` opened directly returns the app, not a 404.
 
