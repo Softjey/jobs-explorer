@@ -18,6 +18,27 @@ describe('useJobs', () => {
     expect(result.current.hasNextPage).toBe(true)
   })
 
+  it('does not refetch the loaded pages when the list mounts again', async () => {
+    let requests = 0
+    server.use(
+      http.get('*/list', () => {
+        requests += 1
+        return HttpResponse.json(list)
+      }),
+    )
+    const wrapper = createWrapper()
+    const first = renderHook(() => useJobs(), { wrapper })
+    await waitFor(() => {
+      expect(first.result.current.isSuccess).toBe(true)
+    })
+    first.unmount()
+
+    const second = renderHook(() => useJobs(), { wrapper })
+    expect(second.result.current.isSuccess).toBe(true)
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(requests).toBe(1)
+  })
+
   it('has no next page once everything is loaded', async () => {
     server.use(
       http.get('*/list', () => HttpResponse.json({ ...list, data: { ...list.data, total: 3 } })),

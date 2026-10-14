@@ -20,8 +20,14 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
   return !isPermanent(error) && failureCount < MAX_RETRIES
 }
 
+/**
+ * No refetch on window focus: a stale infinite list would re-request every loaded page in a row.
+ * The user refreshes the data with Retry or a page reload.
+ */
 export function createQueryClient(): QueryClient {
   return new QueryClient({
-    defaultOptions: { queries: { staleTime: STALE_TIME_MS, retry: shouldRetry } },
+    defaultOptions: {
+      queries: { staleTime: STALE_TIME_MS, retry: shouldRetry, refetchOnWindowFocus: false },
+    },
   })
 }

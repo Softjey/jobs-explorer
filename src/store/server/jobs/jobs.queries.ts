@@ -19,13 +19,17 @@ function getNextPageNumber(
   return hasMoreOnServer && !lastPageWasEmpty ? loadedPages.length : undefined
 }
 
-/** The jobs list, loaded page by page. */
+/**
+ * The jobs list, loaded page by page.
+ * Not refetched on mount: coming back from a job would re-request every loaded page in a row.
+ */
 export const jobsInfiniteQueryOptions = () =>
   infiniteQueryOptions({
     queryKey: jobsKeys.list(),
     queryFn: ({ pageParam }) => api.jobs.getMany({ pageNum: pageParam, pageSize: PAGE_SIZE }),
     initialPageParam: FIRST_PAGE,
     getNextPageParam: getNextPageNumber,
+    refetchOnMount: false,
   })
 
 /** A single job with all its details. */

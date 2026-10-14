@@ -1,5 +1,32 @@
 import { ApiError } from '@/api/api-error'
-import { shouldRetry } from './query-client'
+import { QueryObserver, focusManager } from '@tanstack/react-query'
+import { createQueryClient, shouldRetry } from './query-client'
+
+describe('createQueryClient', () => {
+  it('does not refetch stale queries when the window regains focus', async () => {
+    const queryFn = vi.fn().mockResolvedValue('data')
+    const client = createQueryClient()
+    client.mount()
+    const observer = new QueryObserver(client, {
+      queryKey: ['thing'],
+      queryFn,
+      staleTime: 0,
+    })
+    const unsubscribe = observer.subscribe(() => undefined)
+    await vi.waitFor(() => {
+      expect(queryFn).toHaveBeenCalledTimes(1)
+    })
+
+    focusManager.setFocused(false)
+    focusManager.setFocused(true)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(queryFn).toHaveBeenCalledTimes(1)
+    unsubscribe()
+    client.unmount()
+    focusManager.setFocused(undefined)
+  })
+})
 
 describe('shouldRetry', () => {
   it('does not retry 4xx errors', () => {
