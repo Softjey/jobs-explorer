@@ -13,18 +13,22 @@ export function JobCard({ job, className, ...props }: JobCardProps) {
   return (
     <article
       className={cn(
-        'flex flex-col gap-3.5 rounded-xl border border-slate-200 bg-white p-5',
+        'relative flex flex-col gap-3.5 rounded-xl border border-slate-200 bg-white p-5 hover:border-slate-300 hover:shadow-sm',
         className,
       )}
       {...props}
     >
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-lg leading-snug font-semibold">
-          <Link to="/job/$id" params={{ id: job.workAssignmentId }} className="hover:underline">
+          <Link
+            to="/job/$id"
+            params={{ id: job.workAssignmentId }}
+            className="after:absolute after:inset-0 after:content-[''] hover:underline"
+          >
             {job.workAssignmentName}
           </Link>
         </h2>
-        <FavouriteButton job={job} />
+        <FavouriteButton job={job} className="relative z-10" />
       </div>
       <div className="flex flex-col gap-1.5 text-[15px] text-slate-600">
         <span>{formatLocation(job.jobLocation)}</span>
