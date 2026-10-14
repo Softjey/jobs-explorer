@@ -53,3 +53,8 @@ export const useFavouritesStore = create<FavouritesState>()(
     },
   ),
 )
+
+/** Another tab changed the favourites: reload them so this tab does not overwrite that change. */
+window.addEventListener('storage', (event) => {
+  if (event.key === FAVOURITES_STORAGE_NAME) void useFavouritesStore.persist.rehydrate()
+})

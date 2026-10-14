@@ -64,6 +64,29 @@ describe('favourites store', () => {
     expect(isFavourite(first.workAssignmentId)).toBe(true)
   })
 
+  it('picks up favourites saved by another tab', async () => {
+    const item = { ...first, addedAt: 5 }
+    localStorage.setItem(
+      STORAGE_KEYS.favourites,
+      JSON.stringify({ state: { items: { [first.workAssignmentId]: item } }, version: 1 }),
+    )
+    window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEYS.favourites }))
+    await vi.waitFor(() => {
+      expect(isFavourite(first.workAssignmentId)).toBe(true)
+    })
+  })
+
+  it('ignores storage changes to other keys', async () => {
+    const item = { ...first, addedAt: 5 }
+    localStorage.setItem(
+      STORAGE_KEYS.favourites,
+      JSON.stringify({ state: { items: { [first.workAssignmentId]: item } }, version: 1 }),
+    )
+    window.dispatchEvent(new StorageEvent('storage', { key: 'something-else' }))
+    await Promise.resolve()
+    expect(isFavourite(first.workAssignmentId)).toBe(false)
+  })
+
   it('resets to empty when persisted data is invalid', async () => {
     localStorage.setItem(
       STORAGE_KEYS.favourites,
