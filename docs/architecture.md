@@ -109,15 +109,15 @@ store/
 ### Server
 
 - **`staleTime` 5 min:** the API responds with `cache-control: no-store`, so all caching is done by TanStack Query.
-- **`useJobs`:** `useInfiniteQuery`, page size 30; the next page is derived from `total`.
+- **`useJobs`:** `useInfiniteQuery`, page size 30; the next page is derived from `total`. Pages are fetched by offset, so jobs are de-duplicated by `workAssignmentId` (the first copy wins).
 - **`useJob`:** plain `useQuery` for `JobDetails`. **`useJobPreview(id)`** reads the list cache, so the details header shows immediately (the list items lack the details-only fields, so this is not `placeholderData`).
-- **Retry:** 4xx is not retried; network errors and 5xx are retried twice.
+- **Retry:** 4xx and `schema` errors are not retried; network errors and 5xx are retried twice.
 
 ### Client
 
 - **State:** `Record<id, FavouriteJob>`.
-- **Actions:** `toggle(job: JobPreview)`, `isFavourite(id)`, and a selector that returns the list sorted by `addedAt`.
-- **Robustness:** `persist` uses `version` and `migrate`. The localStorage content is validated with zod on read; invalid data resets to an empty state.
+- **Actions:** `toggle(job: JobPreview)` and `remove(id)`. Hooks: `useFavouriteList` (sorted by `addedAt`), `useIsFavourite(id)`, `useFavouritesCount`.
+- **Robustness:** `persist` uses `version` and `migrate`. The localStorage content is validated with zod on read, entry by entry: invalid entries are dropped, the valid ones are kept.
 
 ## 6. Routes and pages
 

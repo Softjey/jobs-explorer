@@ -38,8 +38,8 @@ Frontend only: Vite, React, TypeScript (strict), Tailwind v4 with shadcn-style c
 - **Layers:** `routes → pages → components → store → api → entities`, enforced by ESLint (`eslint-plugin-boundaries`). Components never call the API directly.
 - **Entities:** zod schemas in `src/entities`; types are inferred from them.
 - **API:** `Api` → `JobsResource` → `HttpClient`. The client unwraps the `{ status, data, error, … }` envelope, validates `data` with zod and throws `ApiError` of kind `network`, `http` or `schema`.
-- **Server state:** TanStack Query. The API sends `cache-control: no-store`, so Query does the caching (`staleTime` 5 min). 4xx is not retried, network errors and 5xx are retried twice.
-- **Favourites:** zustand `persist` in **`localStorage`** (`coople:favourites`). A job is saved as a small preview, so the Favourites page renders without requests. Stored data is validated with zod on read; invalid data resets to empty. Chosen because it is synchronous, needs no backend and survives reloads.
+- **Server state:** TanStack Query. The API sends `cache-control: no-store`, so Query does the caching (`staleTime` 5 min). 4xx and schema errors are not retried, network errors and 5xx are retried twice. The list is de-duplicated by job id, since offset pages can overlap when new jobs are published. Dates are shown in Swiss time (`Europe/Zurich`).
+- **Favourites:** zustand `persist` in **`localStorage`** (`coople:favourites`). A job is saved as a small preview, so the Favourites page renders without requests. Stored data is validated with zod on read, entry by entry: a broken entry is dropped, the rest is kept. Chosen because it is synchronous, needs no backend and survives reloads.
 - **States:** every request has loading (skeleton), error (with Retry) and empty states; details also has not-found (404 or a non-UUID id — no request is made for the latter, the API answers 401 to it).
 
 Details: [docs/architecture.md](docs/architecture.md), quality gates: [docs/quality.md](docs/quality.md).
