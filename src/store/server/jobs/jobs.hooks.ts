@@ -3,8 +3,16 @@ import type { JobId, JobPreview, JobSummary } from '@/entities/job'
 import type { Paginated } from '@/entities/pagination'
 import { jobQueryOptions, jobsInfiniteQueryOptions } from './jobs.queries'
 
+/**
+ * Pages are fetched by offset, so a job published meanwhile shifts others onto the next page.
+ * The first copy of each job wins.
+ */
 function allJobsOf(pages: Paginated<JobSummary>[] | undefined): JobSummary[] {
-  return pages?.flatMap((page) => page.items) ?? []
+  const jobs = new Map<JobId, JobSummary>()
+  for (const job of pages?.flatMap((page) => page.items) ?? []) {
+    if (!jobs.has(job.workAssignmentId)) jobs.set(job.workAssignmentId, job)
+  }
+  return [...jobs.values()]
 }
 
 /** Jobs list with page-by-page loading. `total` is the number of jobs on the server. */

@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import details from '@/test/fixtures/details.json'
 import list from '@/test/fixtures/list.json'
 import { createTestQueryClient, createWrapper } from '@/test/query-wrapper'
-import { server } from '@/test/server'
+import { listPage, server } from '@/test/server'
 import { jobsInfiniteQueryOptions } from './jobs.queries'
 import { useJob, useJobPreview, useJobs } from './jobs.hooks'
 
@@ -33,8 +33,9 @@ describe('useJobs', () => {
     const pages: string[] = []
     server.use(
       http.get('*/list', ({ request }) => {
-        pages.push(new URL(request.url).searchParams.get('pageNum') ?? '')
-        return HttpResponse.json(list)
+        const pageNum = new URL(request.url).searchParams.get('pageNum') ?? ''
+        pages.push(pageNum)
+        return HttpResponse.json(listPage(Number(pageNum)))
       }),
     )
     const { result } = renderHook(() => useJobs(), { wrapper: createWrapper() })
@@ -46,6 +47,29 @@ describe('useJobs', () => {
       expect(result.current.jobs).toHaveLength(6)
     })
     expect(pages).toEqual(['0', '1'])
+  })
+
+  it('shows a job only once when it shifts onto the next page', async () => {
+    const [shifted] = list.data.items
+    server.use(
+      http.get('*/list', ({ request }) => {
+        if (new URL(request.url).searchParams.get('pageNum') === '0') return HttpResponse.json(list)
+        const page = listPage(1)
+        const items = [shifted, ...page.data.items.slice(1)]
+        return HttpResponse.json({ ...page, data: { ...page.data, items } })
+      }),
+    )
+    const { result } = renderHook(() => useJobs(), { wrapper: createWrapper() })
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
+    await result.current.fetchNextPage()
+    await waitFor(() => {
+      expect(result.current.isFetchingNextPage).toBe(false)
+    })
+    const ids = result.current.jobs.map((job) => job.workAssignmentId)
+    expect(ids).toHaveLength(5)
+    expect(new Set(ids).size).toBe(5)
   })
 
   it('exposes the error when the request fails', async () => {
