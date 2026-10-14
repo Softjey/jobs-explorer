@@ -9,7 +9,7 @@ export const FAVOURITES_STORAGE_VERSION = 1
 export const FAVOURITES_STORAGE_NAME = STORAGE_KEYS.favourites
 
 const storedFavouritesSchema = z.object({
-  items: z.record(jobIdSchema, favouriteJobSchema),
+  items: z.record(z.string(), z.unknown()),
 })
 
 /** What to keep when the stored data is from an older version. */
@@ -17,8 +17,18 @@ export function migrateStoredFavourites(): { items: FavouriteItems } {
   return { items: {} }
 }
 
-/** Takes stored favourites if they are valid, otherwise keeps what the store already has. */
+/**
+ * Takes the valid stored favourites one by one and drops the broken ones.
+ * Keeps what the store already has if the stored data is not a favourites record at all.
+ */
 export function restoreFavourites(stored: unknown, current: FavouriteItems): FavouriteItems {
   const parsed = storedFavouritesSchema.safeParse(stored)
-  return parsed.success ? parsed.data.items : current
+  if (!parsed.success) return current
+
+  const valid = Object.entries(parsed.data.items).flatMap(([key, value]) => {
+    const id = jobIdSchema.safeParse(key)
+    const favourite = favouriteJobSchema.safeParse(value)
+    return id.success && favourite.success ? [[id.data, favourite.data] as const] : []
+  })
+  return Object.fromEntries(valid)
 }

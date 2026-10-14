@@ -69,6 +69,17 @@ describe('favourites store', () => {
     expect(useFavouritesStore.getState().items).toEqual({})
   })
 
+  it('keeps the valid favourites when one stored entry is invalid', async () => {
+    const items = {
+      [first.workAssignmentId]: { ...first, addedAt: 5 },
+      [second.workAssignmentId]: { nope: true },
+      'not-an-id': { ...second, addedAt: 6 },
+    }
+    localStorage.setItem(STORAGE_KEYS.favourites, JSON.stringify({ state: { items }, version: 1 }))
+    await useFavouritesStore.persist.rehydrate()
+    expect(Object.keys(useFavouritesStore.getState().items)).toEqual([first.workAssignmentId])
+  })
+
   it('resets to empty when persisted data is not JSON', async () => {
     localStorage.setItem(STORAGE_KEYS.favourites, '{broken')
     await useFavouritesStore.persist.rehydrate()
