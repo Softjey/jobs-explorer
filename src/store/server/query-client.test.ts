@@ -14,11 +14,19 @@ describe('shouldRetry', () => {
     expect(shouldRetry(2, error)).toBe(false)
   })
 
+  it('does not retry schema errors', () => {
+    expect(shouldRetry(0, new ApiError('schema', 'unexpected response'))).toBe(false)
+  })
+
   it('retries network errors', () => {
     expect(shouldRetry(0, new ApiError('network', 'offline'))).toBe(true)
   })
 
   it('retries unknown errors', () => {
     expect(shouldRetry(0, new Error('x'))).toBe(true)
+  })
+
+  it('retries a lookalike that is not an ApiError', () => {
+    expect(shouldRetry(0, { kind: 'http', status: 404 })).toBe(true)
   })
 })
