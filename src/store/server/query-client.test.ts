@@ -7,6 +7,10 @@ describe('shouldRetry', () => {
     expect(shouldRetry(0, error)).toBe(false)
   })
 
+  it.each([408, 429])('retries a %i, since the server may accept the request later', (status) => {
+    expect(shouldRetry(0, new ApiError('http', 'try later', { status }))).toBe(true)
+  })
+
   it('retries 5xx errors twice', () => {
     const error = new ApiError('http', 'boom', { status: 500 })
     expect(shouldRetry(0, error)).toBe(true)
