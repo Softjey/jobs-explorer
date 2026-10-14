@@ -24,10 +24,10 @@ describe('job schemas', () => {
     expect(parsed.clothingRequirements).toBeUndefined()
   })
 
-  it('rejects details without requirements', () => {
+  it('accepts details without requirements, as the live API sometimes sends them', () => {
     const rest: Record<string, unknown> = { ...details.data }
     delete rest['requirements']
-    expect(jobDetailsSchema.safeParse(rest).success).toBe(false)
+    expect(jobDetailsSchema.parse(rest).requirements).toBeUndefined()
   })
 
   it('strips a summary down to the preview fields', () => {

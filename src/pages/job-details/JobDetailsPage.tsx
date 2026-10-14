@@ -95,7 +95,7 @@ export function JobDetailsPage({ id, className, ...props }: JobDetailsPageProps)
                   />
                   <Fact label="Job ID" value={job.waReadableId} />
                 </dl>
-                <Section title="Requirements" text={job.requirements} />
+                {job.requirements && <Section title="Requirements" text={job.requirements} />}
                 {job.clothingRequirements && (
                   <Section title="Clothing" text={job.clothingRequirements} />
                 )}

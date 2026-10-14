@@ -31,7 +31,7 @@ export const jobSummarySchema = z.object({
 })
 
 export const jobDetailsSchema = jobSummarySchema.extend({
-  requirements: z.string(),
+  requirements: z.string().optional(),
   clothingRequirements: z.string().optional(),
   periodTo: z.number(),
   firstShiftTo: z.number(),

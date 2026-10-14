@@ -48,6 +48,17 @@ describe('JobDetailsPage', () => {
     expect(screen.queryByText('Clothing')).not.toBeInTheDocument()
   })
 
+  it('renders a job without requirements and hides that section', async () => {
+    const withoutRequirements: Record<string, unknown> = { ...details.data }
+    delete withoutRequirements['requirements']
+    server.use(
+      http.get(`*/${ID}`, () => HttpResponse.json({ ...details, data: withoutRequirements })),
+    )
+    await renderApp(`/job/${ID}`)
+    expect(await screen.findByText('14 shifts · 109 h')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Requirements' })).not.toBeInTheDocument()
+  })
+
   it('uses the singular for a job with one shift', async () => {
     server.use(
       http.get(`*/${ID}`, () =>
