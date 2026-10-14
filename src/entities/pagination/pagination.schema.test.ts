@@ -11,4 +11,12 @@ describe('paginatedSchema', () => {
   it('rejects a missing total', () => {
     expect(schema.safeParse({ items: [] }).success).toBe(false)
   })
+
+  it('rejects items of the wrong shape', () => {
+    expect(schema.safeParse({ items: [{ id: 'x' }], total: 1 }).success).toBe(false)
+  })
+
+  it('rejects a non-array items value', () => {
+    expect(schema.safeParse({ items: null, total: 1 }).success).toBe(false)
+  })
 })

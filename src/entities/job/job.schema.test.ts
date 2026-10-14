@@ -1,6 +1,6 @@
 import details from '@/test/fixtures/details.json'
 import list from '@/test/fixtures/list.json'
-import { jobDetailsSchema, jobPreviewSchema, jobSummarySchema } from './job.schema'
+import { jobDetailsSchema, jobIdSchema, jobPreviewSchema, jobSummarySchema } from './job.schema'
 
 describe('job schemas', () => {
   it('parses every real list item', () => {
@@ -42,5 +42,44 @@ describe('job schemas', () => {
         'workAssignmentName',
       ].sort(),
     )
+  })
+
+  it('rejects a list item with a non-UUID id', () => {
+    const item = { ...list.data.items[0], workAssignmentId: 'not-a-uuid' }
+    expect(jobSummarySchema.safeParse(item).success).toBe(false)
+  })
+
+  it('rejects wrong field types', () => {
+    const item = list.data.items[0]
+    expect(
+      jobSummarySchema.safeParse({ ...item, hourlyWage: { amount: '27.5', currencyId: 1 } })
+        .success,
+    ).toBe(false)
+    expect(jobSummarySchema.safeParse({ ...item, periodFrom: '2026-10-13' }).success).toBe(false)
+    expect(jobSummarySchema.safeParse({ ...item, jobLocation: null }).success).toBe(false)
+  })
+
+  it('rejects a list item without a name', () => {
+    const rest: Record<string, unknown> = { ...list.data.items[0] }
+    delete rest['workAssignmentName']
+    expect(jobSummarySchema.safeParse(rest).success).toBe(false)
+  })
+
+  it('rejects details without workDuration', () => {
+    const rest: Record<string, unknown> = { ...details.data }
+    delete rest['workDuration']
+    expect(jobDetailsSchema.safeParse(rest).success).toBe(false)
+  })
+
+  it('rejects a preview without a location', () => {
+    const rest: Record<string, unknown> = { ...list.data.items[0] }
+    delete rest['jobLocation']
+    expect(jobPreviewSchema.safeParse(rest).success).toBe(false)
+  })
+
+  it('validates job ids', () => {
+    expect(jobIdSchema.safeParse('3b9d71a8-f900-496b-b0d0-433d587fbe04').success).toBe(true)
+    expect(jobIdSchema.safeParse('').success).toBe(false)
+    expect(jobIdSchema.safeParse(42).success).toBe(false)
   })
 })

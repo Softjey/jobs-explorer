@@ -37,4 +37,14 @@ describe('format', () => {
     expect(formatDuration(90)).toBe('1 h 30 min')
     expect(formatDuration(45)).toBe('45 min')
   })
+
+  it('formats a zero wage and a missing city without crashing', () => {
+    expect(formatWage({ amount: 0, currencyId: 1 })).toBe('CHF 0.00')
+    const location = { addressStreet: '', extraAddress: '', zip: '', city: '', countryId: 1 }
+    expect(formatLocation(location)).toBe('')
+  })
+
+  it('formats zero minutes', () => {
+    expect(formatDuration(0)).toBe('0 min')
+  })
 })

@@ -2,8 +2,8 @@ import { Heart } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import type { JobPreview } from '@/entities/job'
 import { cn } from '@/lib/utils'
-import { useFavouritesStore } from '@/store/client/favourites.store'
-import { useIsFavourite } from '@/store/client/favourites.hooks'
+import { useFavouritesStore } from '@/store/client/favourites/favourites.store'
+import { useIsFavourite } from '@/store/client/favourites/favourites.hooks'
 
 interface FavouriteButtonProps extends Omit<ComponentProps<'button'>, 'children'> {
   job: JobPreview

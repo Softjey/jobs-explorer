@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { favouriteJobSchema } from '@/entities/favourite/favourite.schema'
 import { jobIdSchema } from '@/entities/job/job.schema'
-import { STORAGE_KEYS } from '@/lib/storage-keys'
+import { STORAGE_KEYS } from '../storage-keys'
 import type { FavouriteItems } from './favourites.operations'
 
 /** Bump when the shape of the stored data changes. Older data is dropped. */

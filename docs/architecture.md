@@ -98,7 +98,12 @@ store/
       jobs.queries.ts       jobsInfiniteQueryOptions, jobQueryOptions
       jobs.hooks.ts         useJobs(), useJob(id)
   client/
-    favourites.store.ts     zustand persist
+    storage-keys.ts         STORAGE_KEYS
+    favourites/
+      favourites.operations.ts   pure add/remove/sort
+      favourites.persistence.ts  storage name, version, validation on read
+      favourites.store.ts        zustand persist
+      favourites.hooks.ts        useFavouriteList, useIsFavourite
 ```
 
 ### Server

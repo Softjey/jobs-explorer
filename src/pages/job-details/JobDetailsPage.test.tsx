@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw'
 import { renderApp } from '@/test/render'
 import { server } from '@/test/server'
 import list from '@/test/fixtures/list.json'
-import { useFavouritesStore } from '@/store/client/favourites.store'
+import { useFavouritesStore } from '@/store/client/favourites/favourites.store'
 
 const ID = '3b9d71a8-f900-496b-b0d0-433d587fbe04'
 const UNKNOWN_ID = '00000000-0000-4000-8000-000000000000'
@@ -93,5 +93,25 @@ describe('JobDetailsPage', () => {
     server.use(http.get(`*/${ID}`, () => HttpResponse.json({ status: 200, error: false })))
     await renderApp(`/job/${ID}`)
     expect(await screen.findByText('Could not load the job')).toBeInTheDocument()
+  })
+
+  it('shows an error on a network failure, not not-found', async () => {
+    server.use(http.get(`*/${ID}`, () => HttpResponse.error()))
+    await renderApp(`/job/${ID}`)
+    expect(await screen.findByText('Could not load the job')).toBeInTheDocument()
+    expect(screen.queryByText('Job not found')).not.toBeInTheDocument()
+  })
+
+  it('does not offer to remove a job that is not a favourite', async () => {
+    await renderApp(`/job/${UNKNOWN_ID}`)
+    await screen.findByText('Job not found')
+    expect(screen.queryByRole('button', { name: 'Remove from favourites' })).not.toBeInTheDocument()
+  })
+
+  it('does not show the job content when the request failed', async () => {
+    server.use(http.get(`*/${ID}`, () => HttpResponse.json({ error: true }, { status: 500 })))
+    await renderApp(`/job/${ID}`)
+    await screen.findByText('Could not load the job')
+    expect(screen.queryByText('Requirements')).not.toBeInTheDocument()
   })
 })

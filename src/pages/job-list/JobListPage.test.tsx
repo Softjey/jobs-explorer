@@ -80,4 +80,24 @@ describe('JobListPage', () => {
     ).toBeInTheDocument()
     expect(screen.getAllByRole('article')).toHaveLength(3)
   })
+
+  it('shows an error on a network failure', async () => {
+    server.use(http.get('*/list', () => HttpResponse.error()))
+    await renderApp('/')
+    expect(await screen.findByText('Could not load jobs')).toBeInTheDocument()
+    expect(screen.queryByRole('article')).not.toBeInTheDocument()
+  })
+
+  it('shows an error when the response does not match the schema', async () => {
+    server.use(http.get('*/list', () => HttpResponse.json({ status: 200, data: { items: 'x' } })))
+    await renderApp('/')
+    expect(await screen.findByText('Could not load jobs')).toBeInTheDocument()
+  })
+
+  it('does not show the end of list while a page fails to load', async () => {
+    server.use(http.get('*/list', () => HttpResponse.error()))
+    await renderApp('/')
+    await screen.findByText('Could not load jobs')
+    expect(screen.queryByText('End of list')).not.toBeInTheDocument()
+  })
 })

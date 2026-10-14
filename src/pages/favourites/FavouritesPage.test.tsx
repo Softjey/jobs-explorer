@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderApp } from '@/test/render'
 import list from '@/test/fixtures/list.json'
-import { useFavouritesStore } from '@/store/client/favourites.store'
+import { useFavouritesStore } from '@/store/client/favourites/favourites.store'
 
 const job = list.data.items[0]
 if (!job) throw new Error('fixture needs an item')
@@ -38,5 +38,17 @@ describe('FavouritesPage', () => {
     useFavouritesStore.getState().toggle(job)
     await renderApp('/favourites')
     expect(await screen.findByRole('link', { name: /Favourites/ })).toHaveTextContent('1')
+  })
+
+  it('shows the empty state when stored favourites are corrupted', async () => {
+    localStorage.setItem('coople:favourites', '{broken')
+    await useFavouritesStore.persist.rehydrate()
+    await renderApp('/favourites')
+    expect(await screen.findByText('No favourites yet')).toBeInTheDocument()
+  })
+
+  it('shows not-found for an unknown route', async () => {
+    await renderApp('/nope')
+    expect(await screen.findByText('Page not found')).toBeInTheDocument()
   })
 })

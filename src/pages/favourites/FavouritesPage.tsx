@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { JobGrid } from '@/components/jobs/JobGrid'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useFavouriteList } from '@/store/client/favourites.hooks'
+import { useFavouriteList } from '@/store/client/favourites/favourites.hooks'
 
 type FavouritesPageProps = ComponentProps<'main'>
 

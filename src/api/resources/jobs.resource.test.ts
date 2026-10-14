@@ -35,4 +35,33 @@ describe('JobsResource', () => {
       (e) => e instanceof ApiError && e.kind === 'http' && e.status === 404,
     )
   })
+
+  it('getMany rejects with a server error', async () => {
+    server.use(http.get('*/list', () => HttpResponse.json({ error: true }, { status: 500 })))
+    await expect(api.jobs.getMany({ pageNum: 0, pageSize: 30 })).rejects.toSatisfy(
+      (e) => e instanceof ApiError && e.kind === 'http' && e.status === 500,
+    )
+  })
+
+  it('getMany rejects with a network error', async () => {
+    server.use(http.get('*/list', () => HttpResponse.error()))
+    await expect(api.jobs.getMany({ pageNum: 0, pageSize: 30 })).rejects.toSatisfy(
+      (e) => e instanceof ApiError && e.kind === 'network',
+    )
+  })
+
+  it('getMany rejects with a schema error when an item is malformed', async () => {
+    const broken = { ...list, data: { ...list.data, items: [{ workAssignmentId: 1 }] } }
+    server.use(http.get('*/list', () => HttpResponse.json(broken)))
+    await expect(api.jobs.getMany({ pageNum: 0, pageSize: 30 })).rejects.toSatisfy(
+      (e) => e instanceof ApiError && e.kind === 'schema',
+    )
+  })
+
+  it('getOne rejects with a schema error when data is missing', async () => {
+    server.use(http.get('*/:id', () => HttpResponse.json({ status: 200, error: false })))
+    await expect(api.jobs.getOne('3b9d71a8-f900-496b-b0d0-433d587fbe04')).rejects.toSatisfy(
+      (e) => e instanceof ApiError && e.kind === 'schema',
+    )
+  })
 })

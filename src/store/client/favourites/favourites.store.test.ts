@@ -1,5 +1,5 @@
 import list from '@/test/fixtures/list.json'
-import { STORAGE_KEYS } from '@/lib/storage-keys'
+import { STORAGE_KEYS } from '../storage-keys'
 import { newestFirst } from './favourites.operations'
 import { useFavouritesStore } from './favourites.store'
 
@@ -81,6 +81,44 @@ describe('favourites store', () => {
       STORAGE_KEYS.favourites,
       JSON.stringify({ state: { items: { [first.workAssignmentId]: item } }, version: 99 }),
     )
+    await useFavouritesStore.persist.rehydrate()
+    expect(useFavouritesStore.getState().items).toEqual({})
+  })
+
+  it('ignores remove for an id that is not a favourite', () => {
+    useFavouritesStore.getState().toggle(first)
+    useFavouritesStore.getState().remove('00000000-0000-4000-8000-000000000000')
+    expect(Object.keys(useFavouritesStore.getState().items)).toEqual([first.workAssignmentId])
+  })
+
+  it('reports an unknown id as not a favourite', () => {
+    expect(useFavouritesStore.getState().isFavourite('00000000-0000-4000-8000-000000000000')).toBe(
+      false,
+    )
+  })
+
+  it('throws and stores nothing when toggling an invalid job', () => {
+    const broken = { ...first, hourlyWage: null } as unknown as Parameters<
+      ReturnType<typeof useFavouritesStore.getState>['toggle']
+    >[0]
+    expect(() => {
+      useFavouritesStore.getState().toggle(broken)
+    }).toThrow()
+    expect(useFavouritesStore.getState().items).toEqual({})
+  })
+
+  it('resets to empty when a stored key is not a job id', async () => {
+    const item = { ...first, addedAt: 5 }
+    localStorage.setItem(
+      STORAGE_KEYS.favourites,
+      JSON.stringify({ state: { items: { 'not-an-id': item } }, version: 1 }),
+    )
+    await useFavouritesStore.persist.rehydrate()
+    expect(useFavouritesStore.getState().items).toEqual({})
+  })
+
+  it('resets to empty when the stored state is not an object', async () => {
+    localStorage.setItem(STORAGE_KEYS.favourites, JSON.stringify({ state: 'oops', version: 1 }))
     await useFavouritesStore.persist.rehydrate()
     expect(useFavouritesStore.getState().items).toEqual({})
   })
