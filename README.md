@@ -2,6 +2,8 @@
 
 A small two-screen app on top of the public Coople jobs API: a job list with infinite scroll, a job details screen (`/job/:id`) and Favourites.
 
+**Live demo:** https://jobs-explorer-production.up.railway.app
+
 ![Job list](docs/screenshots/job-list.png)
 ![Job details](docs/screenshots/job-details.png)
 ![Favourites](docs/screenshots/favourites.png)
