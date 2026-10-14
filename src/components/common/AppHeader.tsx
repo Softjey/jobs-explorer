@@ -13,7 +13,10 @@ export function AppHeader({ className, ...props }: AppHeaderProps) {
   const favouritesCount = useFavouritesCount()
 
   return (
-    <header className={cn('sticky top-0 z-40 border-b border-slate-200 bg-white', className)} {...props}>
+    <header
+      className={cn('sticky top-0 z-40 border-b border-slate-200 bg-white', className)}
+      {...props}
+    >
       <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-3 px-6">
         <Link to="/" className="text-xl font-bold tracking-tight">
           Coople Jobs
