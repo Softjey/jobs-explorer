@@ -64,4 +64,20 @@ describe('JobsResource', () => {
       (e) => e instanceof ApiError && e.kind === 'schema',
     )
   })
+
+  it.each([
+    [
+      'getMany',
+      () => api.jobs.getMany({ pageNum: 0, pageSize: 30 }, { signal: AbortSignal.abort() }),
+    ],
+    [
+      'getOne',
+      () =>
+        api.jobs.getOne('3b9d71a8-f900-496b-b0d0-433d587fbe04', { signal: AbortSignal.abort() }),
+    ],
+  ])('%s passes the abort signal to the request', async (_, request) => {
+    await expect(request()).rejects.toSatisfy(
+      (e) => !(e instanceof ApiError) && (e as Error).name === 'AbortError',
+    )
+  })
 })

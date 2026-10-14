@@ -123,6 +123,34 @@ describe('useJob', () => {
   })
 })
 
+describe('cancellation', () => {
+  it.each([
+    ['useJobs', '*/list', (): unknown => useJobs()],
+    [
+      'useJob',
+      `*/${details.data.workAssignmentId}`,
+      (): unknown => useJob(details.data.workAssignmentId),
+    ],
+  ])('%s aborts the request when the query is cancelled', async (_, path, hook) => {
+    let signal: AbortSignal | undefined
+    server.use(
+      http.get(path, ({ request }) => {
+        signal = request.signal
+        return new Promise<never>(() => undefined)
+      }),
+    )
+    const client = createTestQueryClient()
+    renderHook(hook, { wrapper: createWrapper(client) })
+    await waitFor(() => {
+      expect(signal).toBeDefined()
+    })
+    await client.cancelQueries()
+    await waitFor(() => {
+      expect(signal?.aborted).toBe(true)
+    })
+  })
+})
+
 describe('useJobPreview', () => {
   it('returns undefined when the job is not in the list cache', () => {
     const { result } = renderHook(() => useJobPreview('x'), { wrapper: createWrapper() })

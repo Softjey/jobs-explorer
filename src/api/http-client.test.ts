@@ -31,4 +31,14 @@ describe('HttpClient', () => {
       (e) => e instanceof ApiError && e.kind === 'network',
     )
   })
+
+  it('rethrows an abort as is, not as a network error', async () => {
+    server.use(http.get('*/api/thing', () => new Promise<never>(() => undefined)))
+    const controller = new AbortController()
+    const request = client.get('/thing', { signal: controller.signal })
+    controller.abort()
+    await expect(request).rejects.toSatisfy(
+      (e) => !(e instanceof ApiError) && (e as Error).name === 'AbortError',
+    )
+  })
 })

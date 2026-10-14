@@ -26,7 +26,8 @@ function getNextPageNumber(
 export const jobsInfiniteQueryOptions = () =>
   infiniteQueryOptions({
     queryKey: jobsKeys.list(),
-    queryFn: ({ pageParam }) => api.jobs.getMany({ pageNum: pageParam, pageSize: PAGE_SIZE }),
+    queryFn: ({ pageParam, signal }) =>
+      api.jobs.getMany({ pageNum: pageParam, pageSize: PAGE_SIZE }, { signal }),
     initialPageParam: FIRST_PAGE,
     getNextPageParam: getNextPageNumber,
     refetchOnMount: false,
@@ -36,5 +37,5 @@ export const jobsInfiniteQueryOptions = () =>
 export const jobQueryOptions = (id: JobId) =>
   queryOptions({
     queryKey: jobsKeys.detail(id),
-    queryFn: () => api.jobs.getOne(id),
+    queryFn: ({ signal }) => api.jobs.getOne(id, { signal }),
   })
