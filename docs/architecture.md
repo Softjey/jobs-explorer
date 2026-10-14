@@ -195,7 +195,7 @@ Multi-stage:
 
 ### Railway
 
-One project with one service built from the `Dockerfile`. No environment variables are required; `PORT` is provided by Railway. How deploys are triggered is described in `quality.md`, section 5.
+One project with one service built from the `Dockerfile`. No environment variables are required in Railway; `PORT` is provided by Railway. `VITE_*` values are committed in `.env.production` on purpose: they are inlined into the public client bundle, so they are not secret (see the README). How deploys are triggered is described in `quality.md`, section 5.
 
 ## 9. Tests and checks
 

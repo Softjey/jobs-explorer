@@ -56,6 +56,8 @@ The Coople API sends no CORS headers, so the browser cannot call it from another
 
 The base URL comes from `VITE_API_BASE_URL` (set in `.env.development` and `.env.production`; see `.env.example`). Env variables are validated with zod at startup, and a missing one throws.
 
+**Why `.env.development` and `.env.production` are committed:** this is a client-side app. Every `VITE_*` value is inlined into the public JS bundle at build time, so anyone can read it in the browser, and hiding it would add nothing. They hold only non-secret config (the relative `/api` path), so they live in the repo and the Railway service needs no variables set. Real secrets must never use the `VITE_` prefix; the only secret here, `RAILWAY_TOKEN`, is a GitHub Actions secret and never reaches the bundle.
+
 ### Deployment
 
 Live: https://jobs-explorer-production.up.railway.app (Railway project `jobs-explorer`, service `jobs-explorer`, environment `production`). Build and healthcheck settings are in `railway.json`.
