@@ -3,7 +3,13 @@ server {
     root /usr/share/nginx/html;
 
     location /api/ {
-        proxy_pass https://www.coople.com/ch/resources/api/;
+        # A variable in proxy_pass makes nginx re-resolve the host (CloudFront IPs change)
+        # instead of resolving it once at startup. NGINX_LOCAL_RESOLVERS comes from
+        # /etc/resolv.conf via the image entrypoint (NGINX_ENTRYPOINT_LOCAL_RESOLVERS).
+        resolver ${NGINX_LOCAL_RESOLVERS} valid=60s ipv6=off;
+        set $coople_host www.coople.com;
+        rewrite ^/api/(.*)$ /ch/resources/api/$1 break;
+        proxy_pass https://$coople_host;
         proxy_ssl_server_name on;
         proxy_set_header Host www.coople.com;
     }
