@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
-import { useFavouriteList } from '@/store/client/favourites/favourites.hooks'
+import { useFavouritesCount } from '@/store/client/favourites/favourites.hooks'
 
 type AppHeaderProps = ComponentProps<'header'>
 
@@ -10,7 +10,7 @@ const navLinkClass =
 const activeNavLinkClass = cn(navLinkClass, 'bg-indigo-50 text-indigo-800 hover:bg-indigo-50')
 
 export function AppHeader({ className, ...props }: AppHeaderProps) {
-  const favouritesCount = useFavouriteList().length
+  const favouritesCount = useFavouritesCount()
 
   return (
     <header className={cn('border-b border-slate-200 bg-white', className)} {...props}>

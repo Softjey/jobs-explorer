@@ -9,6 +9,11 @@ export function useFavouriteList(): FavouriteJob[] {
   return useMemo(() => newestFirst(items), [items])
 }
 
+/** Selects a number, so the caller re-renders only when the count changes. */
+export function useFavouritesCount(): number {
+  return useFavouritesStore((state) => Object.keys(state.items).length)
+}
+
 export function useIsFavourite(id: JobId): boolean {
   return useFavouritesStore((state) => isInFavourites(state.items, id))
 }
