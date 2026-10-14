@@ -78,17 +78,16 @@ Tests never call the real Coople API. A live contract test and visual regression
 
 GitHub Actions, on every push and pull request. Independent checks run as parallel jobs so that one failure does not hide another.
 
-| Job         | Command                                                      | Depends on                  |
-| ----------- | ------------------------------------------------------------ | --------------------------- |
-| `typecheck` | `npm run typecheck`                                          | —                           |
-| `lint`      | `npm run lint`                                               | —                           |
-| `format`    | `npm run format:check`                                       | —                           |
-| `knip`      | `npm run knip`                                               | —                           |
-| `test`      | `npm run test:coverage`                                      | —                           |
-| `build`     | `npm run build`, uploads `dist`                              | —                           |
-| `e2e`       | `npm run test:e2e`, uploads the Playwright report on failure | —                           |
-| `docker`    | `docker build .`                                             | —                           |
-| `deploy`    | `railway up --ci`                                            | all jobs above; `main` only |
+| Job         | Command                                                      | Depends on |
+| ----------- | ------------------------------------------------------------ | ---------- |
+| `typecheck` | `npm run typecheck`                                          | —          |
+| `lint`      | `npm run lint`                                               | —          |
+| `format`    | `npm run format:check`                                       | —          |
+| `knip`      | `npm run knip`                                               | —          |
+| `test`      | `npm run test:coverage`                                      | —          |
+| `build`     | `npm run build`, uploads `dist`                              | —          |
+| `e2e`       | `npm run test:e2e`, uploads the Playwright report on failure | —          |
+| `docker`    | `docker build .`                                             | —          |
 
 - **Setup:** each job runs `npm ci` with the npm cache from `actions/setup-node`.
 - **Concurrency:** a new push to the same branch cancels the running workflow.
@@ -98,7 +97,7 @@ GitHub Actions, on every push and pull request. Independent checks run as parall
 Target: Railway, one service built from the repo `Dockerfile`.
 
 - **Why Railway:** the app needs a same-origin proxy for `/api` (see `api-cors.md`), which a static host such as GitHub Pages cannot provide. On Railway the container serves the static build and proxies `/api` itself.
-- **Trigger:** the `deploy` job runs on `main` after every other job passes. It uses the Railway CLI with a project token stored in the `RAILWAY_TOKEN` repository secret.
+- **Trigger:** manual only. The `Deploy` workflow (`.github/workflows/deploy.yml`) runs on `workflow_dispatch` and is never started by CI or a push. It deploys the selected ref with the Railway CLI and a project token stored in the `RAILWAY_TOKEN` repository secret. It does not wait for CI, so check that CI is green on the ref first.
 - **Same image everywhere:** `docker compose up` locally and the Railway service run the same `Dockerfile`, so the deployed behaviour can be reproduced on a laptop.
 - **Smoke check after deploy:** the public URL returns the app, `/api/work-assignments/public-jobs/list?pageNum=0&pageSize=1` returns `200`, and `/job/<id>` opened directly returns the app, not a 404.
 

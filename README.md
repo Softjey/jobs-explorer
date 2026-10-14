@@ -58,7 +58,7 @@ The base URL comes from `VITE_API_BASE_URL` (set in `.env.development` and `.env
 
 ### Deployment
 
-The `Dockerfile` builds the app and serves it with nginx on `$PORT`, which also proxies `/api`. CI (`.github/workflows/ci.yml`) runs all checks and deploys `main` to Railway with `railway up --ci` (needs the `RAILWAY_TOKEN` repository secret and a Railway service).
+The `Dockerfile` builds the app and serves it with nginx on `$PORT`, which also proxies `/api`. CI (`.github/workflows/ci.yml`) runs all checks and never deploys. Deploys are manual: run the `Deploy` workflow (`.github/workflows/deploy.yml`, Actions tab → Deploy → Run workflow) on the ref you want; it runs `railway up --ci` and needs the `RAILWAY_TOKEN` repository secret and a Railway service.
 
 ## Assumptions
 
