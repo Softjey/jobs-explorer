@@ -44,7 +44,7 @@ Frontend only: Vite, React, TypeScript (strict), Tailwind v4 with shadcn-style c
 - **Favourites:** zustand `persist` in **`localStorage`** (`coople:favourites`). A job is saved as a small preview, so the Favourites page renders without requests. Stored data is validated with zod on read, entry by entry: a broken entry (or one whose key is not its own job id) is dropped, the rest is kept. Other open tabs reload favourites on the `storage` event, so a stale tab does not overwrite them. Chosen because it is synchronous, needs no backend and survives reloads.
 - **States:** every request has loading (skeleton), error (with Retry) and empty states; details also has not-found (404 or a non-UUID id — no request is made for the latter, the API answers 401 to it).
 
-Details: [docs/architecture.md](docs/architecture.md), quality gates: [docs/quality.md](docs/quality.md).
+Details: [docs/architecture.md](docs/architecture.md), quality gates: [docs/quality.md](docs/quality.md), reasons behind the key decisions: [DECISIONS.md](DECISIONS.md).
 
 ### CORS and the `/api` proxy
 
