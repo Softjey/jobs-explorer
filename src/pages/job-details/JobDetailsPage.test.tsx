@@ -17,7 +17,7 @@ describe('JobDetailsPage', () => {
   it('toggles the favourite from the details header', async () => {
     await renderApp(`/job/${ID}`)
     await userEvent.click(await screen.findByRole('button', { name: 'Add to favourites' }))
-    expect(useFavouritesStore.getState().isFavourite(ID)).toBe(true)
+    expect(useFavouritesStore.getState().items).toHaveProperty([ID])
     expect(screen.getByRole('button', { name: 'Remove from favourites' })).toBeInTheDocument()
   })
 
@@ -27,7 +27,7 @@ describe('JobDetailsPage', () => {
     useFavouritesStore.getState().toggle({ ...item, workAssignmentId: UNKNOWN_ID })
     await renderApp(`/job/${UNKNOWN_ID}`)
     await userEvent.click(await screen.findByRole('button', { name: 'Remove from favourites' }))
-    expect(useFavouritesStore.getState().isFavourite(UNKNOWN_ID)).toBe(false)
+    expect(useFavouritesStore.getState().items).not.toHaveProperty([UNKNOWN_ID])
   })
 
   it('shows a skeleton while loading', async () => {

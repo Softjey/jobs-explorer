@@ -1,10 +1,14 @@
 import list from '@/test/fixtures/list.json'
 import { STORAGE_KEYS } from '../storage-keys'
-import { newestFirst } from './favourites.operations'
+import { isInFavourites, newestFirst } from './favourites.operations'
 import { useFavouritesStore } from './favourites.store'
 
 const [first, second] = list.data.items
 if (!first || !second) throw new Error('fixture needs two items')
+
+function isFavourite(id: string): boolean {
+  return isInFavourites(useFavouritesStore.getState().items, id)
+}
 
 function reset() {
   useFavouritesStore.setState({ items: {} })
@@ -16,9 +20,9 @@ describe('favourites store', () => {
   it('toggle adds a job and a second toggle removes it', () => {
     const { toggle } = useFavouritesStore.getState()
     toggle(first)
-    expect(useFavouritesStore.getState().isFavourite(first.workAssignmentId)).toBe(true)
+    expect(isFavourite(first.workAssignmentId)).toBe(true)
     toggle(first)
-    expect(useFavouritesStore.getState().isFavourite(first.workAssignmentId)).toBe(false)
+    expect(isFavourite(first.workAssignmentId)).toBe(false)
   })
 
   it('stores only the preview fields and addedAt', () => {
@@ -57,7 +61,7 @@ describe('favourites store', () => {
       JSON.stringify({ state: { items: { [first.workAssignmentId]: item } }, version: 1 }),
     )
     await useFavouritesStore.persist.rehydrate()
-    expect(useFavouritesStore.getState().isFavourite(first.workAssignmentId)).toBe(true)
+    expect(isFavourite(first.workAssignmentId)).toBe(true)
   })
 
   it('resets to empty when persisted data is invalid', async () => {
@@ -103,9 +107,7 @@ describe('favourites store', () => {
   })
 
   it('reports an unknown id as not a favourite', () => {
-    expect(useFavouritesStore.getState().isFavourite('00000000-0000-4000-8000-000000000000')).toBe(
-      false,
-    )
+    expect(isFavourite('00000000-0000-4000-8000-000000000000')).toBe(false)
   })
 
   it('throws and stores nothing when toggling an invalid job', () => {

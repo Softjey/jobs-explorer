@@ -19,7 +19,6 @@ interface FavouritesState {
   /** Adds the job to favourites, or removes it if it is already there. */
   toggle: (job: JobPreview) => void
   remove: (id: JobId) => void
-  isFavourite: (id: JobId) => boolean
 }
 
 export const useFavouritesStore = create<FavouritesState>()(
@@ -40,8 +39,6 @@ export const useFavouritesStore = create<FavouritesState>()(
       remove: (id) => {
         set({ items: removeFromFavourites(get().items, id) })
       },
-
-      isFavourite: (id) => isInFavourites(get().items, id),
     }),
     {
       name: FAVOURITES_STORAGE_NAME,

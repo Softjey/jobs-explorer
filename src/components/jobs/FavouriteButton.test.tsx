@@ -15,10 +15,10 @@ describe('FavouriteButton', () => {
   it('toggles the favourite state and its label', async () => {
     render(<FavouriteButton job={job} />)
     await userEvent.click(screen.getByRole('button', { name: 'Add to favourites' }))
-    expect(useFavouritesStore.getState().isFavourite(job.workAssignmentId)).toBe(true)
+    expect(useFavouritesStore.getState().items).toHaveProperty([job.workAssignmentId])
 
     await userEvent.click(screen.getByRole('button', { name: 'Remove from favourites' }))
-    expect(useFavouritesStore.getState().isFavourite(job.workAssignmentId)).toBe(false)
+    expect(useFavouritesStore.getState().items).not.toHaveProperty([job.workAssignmentId])
   })
 
   it('shows a text label in the labelled variant', () => {
@@ -31,7 +31,7 @@ describe('FavouriteButton', () => {
     render(<FavouriteButton job={job} onClick={onClick} />)
     await userEvent.click(screen.getByRole('button'))
     expect(onClick).toHaveBeenCalledTimes(1)
-    expect(useFavouritesStore.getState().isFavourite(job.workAssignmentId)).toBe(true)
+    expect(useFavouritesStore.getState().items).toHaveProperty([job.workAssignmentId])
   })
 
   it('does not mark other jobs as favourite', async () => {
