@@ -61,7 +61,7 @@ entities/
 | `JobLocation`            | `addressStreet`, `extraAddress`, `zip`, `city: string`, `countryId: number`, `state?: string`                                                                                                                     |
 | `JobSkill`               | `jobProfileId: number`, `educationalLevelId?: number`                                                                                                                                                             |
 | `JobSummary` (list item) | `workAssignmentId`, `waReadableId`, `workAssignmentName`, `branchLink: string`; `hourlyWage`, `salary: Money`; `jobSkill: JobSkill`; `jobLocation: JobLocation`; `periodFrom`, `datePublished: number` (epoch ms) |
-| `JobDetails`             | `JobSummary` + `requirements: string`, `clothingRequirements?: string`, `periodTo`, `firstShiftTo`, `shiftsCount`, `workDuration: number`                                                                         |
+| `JobDetails`             | `JobSummary` + `requirements?: string`, `clothingRequirements?: string`, `periodTo`, `firstShiftTo`, `shiftsCount`, `workDuration: number`                                                                        |
 | `JobPreview`             | `Pick<JobSummary, …>` with exactly the fields the card shows                                                                                                                                                      |
 | `FavouriteJob`           | `JobPreview & { addedAt: number }`                                                                                                                                                                                |
 | `Paginated<T>`           | `items: T[]`, `total: number`                                                                                                                                                                                     |
@@ -109,15 +109,18 @@ store/
 ### Server
 
 - **`staleTime` 5 min:** the API responds with `cache-control: no-store`, so all caching is done by TanStack Query.
+- **No automatic refetch of the list:** `refetchOnWindowFocus` is off for all queries and the list query also has `refetchOnMount: false`, since a stale infinite query re-requests every loaded page in a row.
+- **Cancellation:** the query `signal` is passed down to `fetch`; an abort is rethrown as is, not as a network error.
 - **`useJobs`:** `useInfiniteQuery`, page size 30; the next page is derived from `total`. Pages are fetched by offset, so jobs are de-duplicated by `workAssignmentId` (the first copy wins).
 - **`useJob`:** plain `useQuery` for `JobDetails`. **`useJobPreview(id)`** reads the list cache, so the details header shows immediately (the list items lack the details-only fields, so this is not `placeholderData`).
-- **Retry:** 4xx and `schema` errors are not retried; network errors and 5xx are retried twice.
+- **Retry:** 4xx (except 408 and 429) and `schema` errors are not retried; network errors, 5xx, 408 and 429 are retried twice.
 
 ### Client
 
 - **State:** `Record<id, FavouriteJob>`.
 - **Actions:** `toggle(job: JobPreview)` and `remove(id)`. Hooks: `useFavouriteList` (sorted by `addedAt`), `useIsFavourite(id)`, `useFavouritesCount`.
-- **Robustness:** `persist` uses `version` and `migrate`. The localStorage content is validated with zod on read, entry by entry: invalid entries are dropped, the valid ones are kept.
+- **Robustness:** `persist` uses `version` and `migrate`. The localStorage content is validated with zod on read, entry by entry: invalid entries (including one whose key is not its `workAssignmentId`) are dropped, the valid ones are kept.
+- **Several tabs:** a `storage` event for the favourites key rehydrates the store, so a stale tab does not overwrite another tab's changes.
 
 ## 6. Routes and pages
 
@@ -156,7 +159,8 @@ A page reads data through the hooks in `store/` and composes components. Loaders
 - **Favourites:** cards render from localStorage with no requests. Clicking a card opens `/job/$id`, where details are fetched by id.
 - **Unpublished job:** if a favourite job no longer exists, the details screen shows not-found with a "Remove from favourites" button.
 - **Not found on details:** either the API returned 404, or the `id` is not a UUID. In the second case no request is made, because the API answers 401 to a non-UUID id.
-- **`requirements`:** the API returns markdown; it is rendered with `react-markdown`.
+- **`requirements`:** the API returns markdown; it is rendered with `react-markdown`. Some jobs have no `requirements`; the section is then hidden.
+- **Job names** are plain text: the `*` in them is gender notation (`Mitarbeiter*in`), and rendering them as markdown would turn it into italics.
 
 ## 8. CORS, container and deployment
 
@@ -181,7 +185,7 @@ Multi-stage:
 ### nginx
 
 - **Port:** listens on `$PORT`. Railway injects it; the official nginx image substitutes it from the template at start.
-- **`/api/`:** `proxy_pass` to the Coople origin with `proxy_ssl_server_name on` and the `Host` header set to `www.coople.com`.
+- **`/api/`:** `proxy_pass` to the Coople origin with `proxy_ssl_server_name on` and the `Host` header set to `www.coople.com`. The host is a variable with a `resolver` (taken from `/etc/resolv.conf` via `NGINX_ENTRYPOINT_LOCAL_RESOLVERS`), so nginx re-resolves CloudFront IPs instead of keeping the ones from startup.
 - **Everything else:** static files with `try_files $uri /index.html`, so `/job/:id` and `/favourites` work when opened directly.
 - **Caching:** hashed assets are served as immutable; `index.html` is served with `no-cache`.
 
