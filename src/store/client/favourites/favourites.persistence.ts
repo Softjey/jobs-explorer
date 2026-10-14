@@ -12,6 +12,11 @@ const storedFavouritesSchema = z.object({
   items: z.record(z.string(), z.unknown()),
 })
 
+/** One stored `[key, favourite]` pair. The key must be the favourite's own job id. */
+const storedFavouriteEntrySchema = z
+  .tuple([jobIdSchema, favouriteJobSchema])
+  .refine(([id, favourite]) => id === favourite.workAssignmentId)
+
 /** What to keep when the stored data is from an older version. */
 export function migrateStoredFavourites(): { items: FavouriteItems } {
   return { items: {} }
@@ -25,10 +30,9 @@ export function restoreFavourites(stored: unknown, current: FavouriteItems): Fav
   const parsed = storedFavouritesSchema.safeParse(stored)
   if (!parsed.success) return current
 
-  const valid = Object.entries(parsed.data.items).flatMap(([key, value]) => {
-    const id = jobIdSchema.safeParse(key)
-    const favourite = favouriteJobSchema.safeParse(value)
-    return id.success && favourite.success ? [[id.data, favourite.data] as const] : []
+  const valid = Object.entries(parsed.data.items).flatMap((entry) => {
+    const result = storedFavouriteEntrySchema.safeParse(entry)
+    return result.success ? [result.data] : []
   })
   return Object.fromEntries(valid)
 }
