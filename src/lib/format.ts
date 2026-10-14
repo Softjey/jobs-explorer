@@ -8,11 +8,12 @@ const amountFormat = new Intl.NumberFormat('en-CH', {
   maximumFractionDigits: 2,
 })
 
+/** All jobs are in Switzerland, so dates are shown in Swiss time whatever the viewer's zone. */
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
-  timeZone: 'UTC',
+  timeZone: 'Europe/Zurich',
 })
 
 export function formatWage({ amount, currencyId }: Money): string {

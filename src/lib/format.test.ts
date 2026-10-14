@@ -13,6 +13,18 @@ describe('format', () => {
     expect(formatDate(Date.UTC(2026, 9, 12, 12))).toBe('12 Oct 2026')
   })
 
+  it('formats dates in Swiss time, where a late UTC evening is already the next day', () => {
+    // Summer (CEST, UTC+2): 23:23 UTC is 01:23 in Zurich, a real case from the API.
+    expect(formatDate(Date.UTC(2026, 9, 10, 23, 23))).toBe('11 Oct 2026')
+    // Winter (CET, UTC+1): 23:30 UTC is 00:30 in Zurich.
+    expect(formatDate(Date.UTC(2026, 0, 14, 23, 30))).toBe('15 Jan 2026')
+  })
+
+  it('keeps the same day when it is still before midnight in Zurich', () => {
+    expect(formatDate(Date.UTC(2026, 0, 14, 22, 30))).toBe('14 Jan 2026')
+    expect(formatDate(Date.UTC(2026, 9, 10, 21, 59))).toBe('10 Oct 2026')
+  })
+
   it('formats location as zip and city', () => {
     const location = {
       addressStreet: '',
