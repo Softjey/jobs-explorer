@@ -82,7 +82,8 @@ api/
 ```
 
 - **Calls:** `api.jobs.getMany({ pageNum, pageSize })` returns `Paginated<JobSummary>`; `api.jobs.getOne(id)` returns `JobDetails`.
-- **`HttpClient`:** requests the relative `/api` base (configurable through env), unwraps the envelope `{ status, data, error, errorCode, errorId }` and validates `data` with zod. It is passed to each resource through the constructor.
+- **`HttpClient`:** transport only. Requests the base URL from validated env (`VITE_API_BASE_URL`, `/api`) and returns `{ ok, status, body }`. It is passed to each resource through the constructor.
+- **Envelope:** `api/envelope.ts` unwraps `{ status, data, error, errorCode, errorId }`, validates `data` with zod and throws `ApiError`. Resources call it on the `HttpClient` response.
 - **`ApiError`:** has a `kind` of `network`, `http` (with `status`, `errorCode`, `errorId`) or `schema`.
 - **Adding a resource:** one new class in `resources/` and one field on `Api`.
 

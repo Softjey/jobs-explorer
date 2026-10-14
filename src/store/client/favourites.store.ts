@@ -1,66 +1,58 @@
-import { useMemo } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { z } from 'zod'
-import type { FavouriteJob } from '@/entities/favourite'
-import { favouriteJobSchema } from '@/entities/favourite/favourite.schema'
-import type { JobPreview } from '@/entities/job'
-import { jobPreviewSchema } from '@/entities/job/job.schema'
-
-export const FAVOURITES_STORAGE_KEY = 'coople:favourites'
-const STORAGE_VERSION = 1
-
-const persistedSchema = z.object({ items: z.record(z.string(), favouriteJobSchema) })
+import type { JobId, JobPreview } from '@/entities/job'
+import {
+  addToFavourites,
+  isInFavourites,
+  removeFromFavourites,
+  type FavouriteItems,
+} from './favourites.operations'
+import {
+  FAVOURITES_STORAGE_NAME,
+  FAVOURITES_STORAGE_VERSION,
+  migrateStoredFavourites,
+  restoreFavourites,
+} from './favourites.persistence'
 
 interface FavouritesState {
-  items: Record<string, FavouriteJob>
+  items: FavouriteItems
+  /** Adds the job to favourites, or removes it if it is already there. */
   toggle: (job: JobPreview) => void
-  remove: (id: string) => void
-  isFavourite: (id: string) => boolean
+  remove: (id: JobId) => void
+  isFavourite: (id: JobId) => boolean
 }
 
 export const useFavouritesStore = create<FavouritesState>()(
   persist(
     (set, get) => ({
       items: {},
+
       toggle: (job) => {
-        const preview = jobPreviewSchema.parse(job)
-        const { [preview.workAssignmentId]: existing, ...rest } = get().items
+        const { items } = get()
+        const id = job.workAssignmentId
         set({
-          items: existing
-            ? rest
-            : { ...rest, [preview.workAssignmentId]: { ...preview, addedAt: Date.now() } },
+          items: isInFavourites(items, id)
+            ? removeFromFavourites(items, id)
+            : addToFavourites(items, job, Date.now()),
         })
       },
+
       remove: (id) => {
-        const items = Object.entries(get().items).filter(([key]) => key !== id)
-        set({ items: Object.fromEntries(items) })
+        set({ items: removeFromFavourites(get().items, id) })
       },
-      isFavourite: (id) => id in get().items,
+
+      isFavourite: (id) => isInFavourites(get().items, id),
     }),
     {
-      name: FAVOURITES_STORAGE_KEY,
-      version: STORAGE_VERSION,
+      name: FAVOURITES_STORAGE_NAME,
+      version: FAVOURITES_STORAGE_VERSION,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ items: state.items }),
-      migrate: () => ({ items: {} }),
-      merge: (persisted, current) => {
-        const parsed = persistedSchema.safeParse(persisted)
-        return parsed.success ? { ...current, items: parsed.data.items } : current
-      },
+      partialize: ({ items }) => ({ items }),
+      migrate: migrateStoredFavourites,
+      merge: (stored, current) => ({
+        ...current,
+        items: restoreFavourites(stored, current.items),
+      }),
     },
   ),
 )
-
-export function selectFavouriteList(state: Pick<FavouritesState, 'items'>): FavouriteJob[] {
-  return Object.values(state.items).sort((a, b) => b.addedAt - a.addedAt)
-}
-
-export function useFavouriteList(): FavouriteJob[] {
-  const items = useFavouritesStore((state) => state.items)
-  return useMemo(() => selectFavouriteList({ items }), [items])
-}
-
-export function useIsFavourite(id: string): boolean {
-  return useFavouritesStore((state) => id in state.items)
-}

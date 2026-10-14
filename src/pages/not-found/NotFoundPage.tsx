@@ -1,21 +1,23 @@
 import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import type { ComponentProps } from 'react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
-interface NotFoundPageProps {
+interface NotFoundPageProps extends Omit<ComponentProps<'main'>, 'title'> {
   title?: string
   description?: string
-  children?: ReactNode
 }
 
 export function NotFoundPage({
   title = 'Page not found',
   description = 'The page does not exist or is no longer available.',
   children,
+  className,
+  ...props
 }: NotFoundPageProps) {
   return (
-    <main className="mx-auto max-w-3xl px-6 pt-8 pb-16">
+    <main className={cn('mx-auto max-w-3xl px-6 pt-8 pb-16', className)} {...props}>
       <EmptyState
         title={title}
         description={description}

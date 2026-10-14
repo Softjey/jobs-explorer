@@ -28,6 +28,7 @@ export default defineConfig({
   preview: { proxy: apiProxy },
   test: {
     globals: true,
+    env: { VITE_API_BASE_URL: '/api' },
     environment: 'jsdom',
     setupFiles: ['src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],

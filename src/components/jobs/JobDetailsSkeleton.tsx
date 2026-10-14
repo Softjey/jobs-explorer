@@ -1,8 +1,17 @@
+import type { ComponentProps } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
-export function JobDetailsSkeleton() {
+type JobDetailsSkeletonProps = ComponentProps<'div'>
+
+export function JobDetailsSkeleton({ className, ...props }: JobDetailsSkeletonProps) {
   return (
-    <div data-testid="job-details-skeleton" aria-hidden className="flex flex-col gap-4">
+    <div
+      data-testid="job-details-skeleton"
+      aria-hidden
+      className={cn('flex flex-col gap-4', className)}
+      {...props}
+    >
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Skeleton className="h-16" />
         <Skeleton className="h-16" />

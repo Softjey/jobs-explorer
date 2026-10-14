@@ -1,5 +1,7 @@
 import list from '@/test/fixtures/list.json'
-import { FAVOURITES_STORAGE_KEY, selectFavouriteList, useFavouritesStore } from './favourites.store'
+import { STORAGE_KEYS } from '@/lib/storage-keys'
+import { newestFirst } from './favourites.operations'
+import { useFavouritesStore } from './favourites.store'
 
 const [first, second] = list.data.items
 if (!first || !second) throw new Error('fixture needs two items')
@@ -38,20 +40,20 @@ describe('favourites store', () => {
     const { toggle } = useFavouritesStore.getState()
     toggle(first)
     toggle(second)
-    const ids = selectFavouriteList(useFavouritesStore.getState()).map((j) => j.workAssignmentId)
+    const ids = newestFirst(useFavouritesStore.getState().items).map((j) => j.workAssignmentId)
     expect(ids).toEqual([second.workAssignmentId, first.workAssignmentId])
   })
 
   it('persists to localStorage', () => {
     useFavouritesStore.getState().toggle(first)
-    const raw = localStorage.getItem(FAVOURITES_STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEYS.favourites)
     expect(raw).toContain(first.workAssignmentId)
   })
 
   it('rehydrates valid persisted data', async () => {
     const item = { ...first, addedAt: 5 }
     localStorage.setItem(
-      FAVOURITES_STORAGE_KEY,
+      STORAGE_KEYS.favourites,
       JSON.stringify({ state: { items: { [first.workAssignmentId]: item } }, version: 1 }),
     )
     await useFavouritesStore.persist.rehydrate()
@@ -60,7 +62,7 @@ describe('favourites store', () => {
 
   it('resets to empty when persisted data is invalid', async () => {
     localStorage.setItem(
-      FAVOURITES_STORAGE_KEY,
+      STORAGE_KEYS.favourites,
       JSON.stringify({ state: { items: { x: { nope: true } } }, version: 1 }),
     )
     await useFavouritesStore.persist.rehydrate()
@@ -68,7 +70,7 @@ describe('favourites store', () => {
   })
 
   it('resets to empty when persisted data is not JSON', async () => {
-    localStorage.setItem(FAVOURITES_STORAGE_KEY, '{broken')
+    localStorage.setItem(STORAGE_KEYS.favourites, '{broken')
     await useFavouritesStore.persist.rehydrate()
     expect(useFavouritesStore.getState().items).toEqual({})
   })
@@ -76,7 +78,7 @@ describe('favourites store', () => {
   it('resets to empty when the persisted version is unknown', async () => {
     const item = { ...first, addedAt: 5 }
     localStorage.setItem(
-      FAVOURITES_STORAGE_KEY,
+      STORAGE_KEYS.favourites,
       JSON.stringify({ state: { items: { [first.workAssignmentId]: item } }, version: 99 }),
     )
     await useFavouritesStore.persist.rehydrate()

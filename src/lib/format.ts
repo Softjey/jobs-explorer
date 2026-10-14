@@ -1,4 +1,4 @@
-import type { JobLocation } from '@/entities/job'
+import type { JobDetails, JobLocation, JobSummary } from '@/entities/job'
 import type { Money } from '@/entities/money'
 
 const CURRENCIES: Record<number, string> = { 1: 'CHF' }
@@ -21,7 +21,7 @@ export function formatWage({ amount, currencyId }: Money): string {
   return currency ? `${currency} ${value}` : value
 }
 
-export function formatDate(epochMs: number): string {
+export function formatDate(epochMs: JobSummary['datePublished']): string {
   return dateFormat.format(epochMs)
 }
 
@@ -29,7 +29,7 @@ export function formatLocation({ zip, city }: JobLocation): string {
   return [zip, city].filter(Boolean).join(' ')
 }
 
-export function formatDuration(minutes: number): string {
+export function formatDuration(minutes: JobDetails['workDuration']): string {
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60
   if (hours === 0) return `${rest} min`

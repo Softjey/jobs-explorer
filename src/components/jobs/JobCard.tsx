@@ -1,15 +1,23 @@
 import { Link } from '@tanstack/react-router'
+import type { ComponentProps } from 'react'
 import type { JobPreview } from '@/entities/job'
 import { formatDate, formatLocation, formatWage } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { FavouriteButton } from './FavouriteButton'
 
-interface JobCardProps {
+interface JobCardProps extends ComponentProps<'article'> {
   job: JobPreview
 }
 
-export function JobCard({ job }: JobCardProps) {
+export function JobCard({ job, className, ...props }: JobCardProps) {
   return (
-    <article className="flex flex-col gap-3.5 rounded-xl border border-slate-200 bg-white p-5">
+    <article
+      className={cn(
+        'flex flex-col gap-3.5 rounded-xl border border-slate-200 bg-white p-5',
+        className,
+      )}
+      {...props}
+    >
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-lg leading-snug font-semibold">
           <Link to="/job/$id" params={{ id: job.workAssignmentId }} className="hover:underline">

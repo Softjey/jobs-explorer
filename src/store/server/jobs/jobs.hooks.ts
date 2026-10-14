@@ -1,32 +1,43 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { JobPreview, JobSummary } from '@/entities/job'
+import type { JobId, JobPreview, JobSummary } from '@/entities/job'
+import type { Paginated } from '@/entities/pagination'
 import { jobQueryOptions, jobsInfiniteQueryOptions } from './jobs.queries'
 
+function allJobsOf(pages: Paginated<JobSummary>[] | undefined): JobSummary[] {
+  return pages?.flatMap((page) => page.items) ?? []
+}
+
+/** Jobs list with page-by-page loading. `total` is the number of jobs on the server. */
 export function useJobs() {
   const query = useInfiniteQuery(jobsInfiniteQueryOptions())
-  const jobs: JobSummary[] = query.data?.pages.flatMap((page) => page.items) ?? []
-  const total = query.data?.pages[0]?.total ?? 0
+  const pages = query.data?.pages
+
   return {
-    jobs,
-    total,
+    jobs: allJobsOf(pages),
+    total: pages?.[0]?.total ?? 0,
     isPending: query.isPending,
     isError: query.isError,
+    isSuccess: query.isSuccess,
     refetch: query.refetch,
     hasNextPage: query.hasNextPage,
     isFetchingNextPage: query.isFetchingNextPage,
     isFetchNextPageError: query.isFetchNextPageError,
     fetchNextPage: query.fetchNextPage,
-    isSuccess: query.isSuccess,
   }
 }
 
-export function useJob(id: string) {
+/** Full details of one job. */
+export function useJob(id: JobId) {
   return useQuery(jobQueryOptions(id))
 }
 
-/** Job header data taken from the list cache, so details can render before the request ends. */
-export function useJobPreview(id: string): JobPreview | undefined {
-  const client = useQueryClient()
-  const cached = client.getQueryData(jobsInfiniteQueryOptions().queryKey)
-  return cached?.pages.flatMap((page) => page.items).find((job) => job.workAssignmentId === id)
+/**
+ * The job as the list already knows it, or `undefined` if the list was never loaded.
+ * Lets the details page show a header before the details request finishes.
+ */
+export function useJobPreview(id: JobId): JobPreview | undefined {
+  const queryClient = useQueryClient()
+  const cachedList = queryClient.getQueryData(jobsInfiniteQueryOptions().queryKey)
+
+  return allJobsOf(cachedList?.pages).find((job) => job.workAssignmentId === id)
 }

@@ -1,25 +1,28 @@
+import type { JobDetails, JobId, JobSummary } from '@/entities/job'
 import { jobDetailsSchema, jobSummarySchema } from '@/entities/job/job.schema'
-import type { JobDetails, JobSummary } from '@/entities/job'
-import { paginatedSchema } from '@/entities/pagination/pagination.schema'
 import type { Paginated } from '@/entities/pagination'
+import { paginatedSchema } from '@/entities/pagination/pagination.schema'
+import { unwrapEnvelope } from '../envelope'
 import type { HttpClient } from '../http-client'
 
-const BASE = '/work-assignments/public-jobs'
-
-export interface GetManyParams {
+interface GetManyParams {
   pageNum: number
   pageSize: number
 }
 
 export class JobsResource {
+  private readonly basePath = '/work-assignments/public-jobs'
+
   constructor(private readonly http: HttpClient) {}
 
-  getMany({ pageNum, pageSize }: GetManyParams): Promise<Paginated<JobSummary>> {
+  async getMany({ pageNum, pageSize }: GetManyParams): Promise<Paginated<JobSummary>> {
     const query = new URLSearchParams({ pageNum: String(pageNum), pageSize: String(pageSize) })
-    return this.http.request(`${BASE}/list?${query.toString()}`, paginatedSchema(jobSummarySchema))
+    const response = await this.http.get(`${this.basePath}/list?${query.toString()}`)
+    return unwrapEnvelope(response, paginatedSchema(jobSummarySchema))
   }
 
-  getOne(id: string): Promise<JobDetails> {
-    return this.http.request(`${BASE}/${encodeURIComponent(id)}`, jobDetailsSchema)
+  async getOne(id: JobId): Promise<JobDetails> {
+    const response = await this.http.get(`${this.basePath}/${encodeURIComponent(id)}`)
+    return unwrapEnvelope(response, jobDetailsSchema)
   }
 }

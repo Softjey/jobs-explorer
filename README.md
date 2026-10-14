@@ -54,7 +54,7 @@ The Coople API sends no CORS headers, so the browser cannot call it from another
 | `npm run preview` | Vite `preview.proxy`                  |
 | Docker / Railway  | nginx (`nginx/default.conf.template`) |
 
-The base URL can be changed with `VITE_API_BASE_URL`.
+The base URL comes from `VITE_API_BASE_URL` (set in `.env.development` and `.env.production`; see `.env.example`). Env variables are validated with zod at startup, and a missing one throws.
 
 ### Deployment
 

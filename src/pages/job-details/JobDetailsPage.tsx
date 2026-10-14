@@ -1,27 +1,31 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
+import type { ComponentProps } from 'react'
 import Markdown from 'react-markdown'
 import { ErrorState } from '@/components/common/ErrorState'
-import { JobDetailsSkeleton } from '@/components/jobs/JobDetailsSkeleton'
 import { FavouriteButton } from '@/components/jobs/FavouriteButton'
+import { JobDetailsSkeleton } from '@/components/jobs/JobDetailsSkeleton'
 import { Button } from '@/components/ui/button'
-import { ApiError } from '@/api/api-error'
+import type { JobId } from '@/entities/job'
 import { formatDate, formatDuration, formatLocation, formatWage } from '@/lib/format'
-import { useFavouritesStore, useIsFavourite } from '@/store/client/favourites.store'
+import { cn } from '@/lib/utils'
+import { useIsFavourite } from '@/store/client/favourites.hooks'
+import { useFavouritesStore } from '@/store/client/favourites.store'
+import { isNotFoundError } from '@/store/server/errors'
 import { useJob, useJobPreview } from '@/store/server/jobs/jobs.hooks'
 import { NotFoundPage } from '../not-found/NotFoundPage'
 
-interface JobDetailsPageProps {
-  id: string
+interface JobDetailsPageProps extends ComponentProps<'main'> {
+  id: JobId
 }
 
-export function JobDetailsPage({ id }: JobDetailsPageProps) {
+export function JobDetailsPage({ id, className, ...props }: JobDetailsPageProps) {
   const { data: job, error, isPending, refetch } = useJob(id)
   const preview = useJobPreview(id)
   const isFavourite = useIsFavourite(id)
-  const remove = useFavouritesStore((state) => state.remove)
+  const removeFavourite = useFavouritesStore((state) => state.remove)
 
-  if (error instanceof ApiError && error.kind === 'http' && error.status === 404) {
+  if (isNotFoundError(error)) {
     return (
       <NotFoundPage
         title="Job not found"
@@ -31,7 +35,7 @@ export function JobDetailsPage({ id }: JobDetailsPageProps) {
           <Button
             variant="outline"
             onClick={() => {
-              remove(id)
+              removeFavourite(id)
             }}
           >
             Remove from favourites
@@ -44,7 +48,7 @@ export function JobDetailsPage({ id }: JobDetailsPageProps) {
   const header = job ?? preview
 
   return (
-    <main className="mx-auto max-w-3xl px-6 pt-6 pb-16">
+    <main className={cn('mx-auto max-w-3xl px-6 pt-6 pb-16', className)} {...props}>
       <Link
         to="/"
         className="inline-flex min-h-11 items-center gap-2 font-semibold text-blue-800 hover:underline"
@@ -104,18 +108,28 @@ export function JobDetailsPage({ id }: JobDetailsPageProps) {
   )
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
+interface FactProps extends ComponentProps<'div'> {
+  label: string
+  value: string
+}
+
+function Fact({ label, value, className, ...props }: FactProps) {
   return (
-    <div className="rounded-lg bg-slate-50 p-4">
+    <div className={cn('rounded-lg bg-slate-50 p-4', className)} {...props}>
       <dt className="mb-1 text-[13px] text-slate-600">{label}</dt>
       <dd className="font-semibold">{value}</dd>
     </div>
   )
 }
 
-function Section({ title, text }: { title: string; text: string }) {
+interface SectionProps extends Omit<ComponentProps<'section'>, 'title'> {
+  title: string
+  text: string
+}
+
+function Section({ title, text, className, ...props }: SectionProps) {
   return (
-    <section className="flex flex-col gap-2.5">
+    <section className={cn('flex flex-col gap-2.5', className)} {...props}>
       <h2 className="text-xl font-semibold">{title}</h2>
       <div className="leading-relaxed whitespace-pre-line">
         <Markdown>{text}</Markdown>

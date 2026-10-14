@@ -1,16 +1,14 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import { z } from 'zod'
+import { jobIdSchema } from '@/entities/job/job.schema'
 import { JobDetailsPage } from '@/pages/job-details/JobDetailsPage'
 import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
 import { jobQueryOptions } from '@/store/server/jobs/jobs.queries'
-
-const idSchema = z.uuid()
 
 export const Route = createFileRoute('/job/$id')({
   params: {
     parse: ({ id }) => {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- notFound() is the router's control-flow object
-      if (!idSchema.safeParse(id).success) throw notFound()
+      if (!jobIdSchema.safeParse(id).success) throw notFound()
       return { id }
     },
   },

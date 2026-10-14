@@ -1,3 +1,4 @@
+import { env } from '@/lib/env'
 import { HttpClient } from './http-client'
 import { JobsResource } from './resources/jobs.resource'
 
@@ -9,6 +10,4 @@ class Api {
   }
 }
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api'
-
-export const api = new Api(new HttpClient(baseUrl))
+export const api = new Api(new HttpClient(env.VITE_API_BASE_URL))

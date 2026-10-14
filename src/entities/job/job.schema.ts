@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { moneySchema } from '../money/money.schema'
 
+export const jobIdSchema = z.uuid()
+
 export const jobLocationSchema = z.object({
   addressStreet: z.string(),
   extraAddress: z.string(),
@@ -16,7 +18,7 @@ const jobSkillSchema = z.object({
 })
 
 export const jobSummarySchema = z.object({
-  workAssignmentId: z.string(),
+  workAssignmentId: jobIdSchema,
   waReadableId: z.string(),
   workAssignmentName: z.string(),
   branchLink: z.string(),
